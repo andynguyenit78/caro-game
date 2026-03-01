@@ -18,6 +18,10 @@ export interface GameState {
     };
     lastMove?: [number, number] | null;
     quit?: boolean;
+    playAgain?: {
+        X?: boolean;
+        O?: boolean;
+    };
 }
 
 /**

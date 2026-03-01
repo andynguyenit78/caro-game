@@ -149,21 +149,31 @@ export function useGameState(roomId: string, userId: string) {
         [roomId, gameState, myPlayerRole]
     );
 
-    const resetGame = useCallback(async () => {
+    const requestPlayAgain = useCallback(async () => {
         if (myPlayerRole === '') return;
-        hasRecordedResult.current = false;
 
-        const updates = {
-            board: createEmptyBoard(15),
-            currentPlayer: 'X',
-            winner: '',
-            status: 'playing',
-            lastMove: null,
-            quit: null,
-        };
+        const opponentRole = myPlayerRole === 'X' ? 'O' : 'X';
+        const opponentVoted = gameState.playAgain?.[opponentRole as 'X' | 'O'] === true;
 
-        await updateGameState(roomId, updates);
-    }, [roomId, myPlayerRole]);
+        if (opponentVoted) {
+            // Both players agreed, actually reset the game.
+            hasRecordedResult.current = false;
+            const updates = {
+                board: createEmptyBoard(15),
+                currentPlayer: 'X', // Starting player
+                winner: '',
+                status: 'playing',
+                lastMove: null,
+                quit: null,
+                playAgain: null,
+            };
+            await updateGameState(roomId, updates);
+        } else {
+            // Only this player has voted so far.
+            const newPlayAgain = { ...gameState.playAgain, [myPlayerRole]: true };
+            await updateGameState(roomId, { playAgain: newPlayAgain });
+        }
+    }, [roomId, myPlayerRole, gameState.playAgain]);
 
     const quitGame = useCallback(async () => {
         if (myPlayerRole === '') return;
@@ -206,8 +216,9 @@ export function useGameState(roomId: string, userId: string) {
         playersStats,
         makeMove,
         joinGame,
-        resetGame,
+        requestPlayAgain,
         quitGame,
+        hasRequestedPlayAgain: gameState.playAgain?.[myPlayerRole as 'X' | 'O'] === true,
         isMyTurn: gameState.currentPlayer === myPlayerRole,
         lastMove: gameState.lastMove || null,
     };

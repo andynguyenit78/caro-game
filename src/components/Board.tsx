@@ -20,8 +20,9 @@ export default function Board({ roomId, userId }: { roomId: string; userId: stri
         playersStats,
         makeMove,
         joinGame,
-        resetGame,
+        requestPlayAgain,
         quitGame,
+        hasRequestedPlayAgain,
         isMyTurn,
         lastMove,
     } = useGameState(roomId, userId);
@@ -296,9 +297,10 @@ export default function Board({ roomId, userId }: { roomId: string; userId: stri
             {gameState.status === 'finished' && myPlayerRole && (
                 <GameOverOverlay
                     isWinner={gameState.winner === myPlayerRole}
-                    onPlayAgain={resetGame}
+                    onPlayAgain={requestPlayAgain}
                     onQuit={quitGame}
                     playerRole={gameState.winner || ''}
+                    hasWaiting={hasRequestedPlayAgain}
                 />
             )}
         </div>

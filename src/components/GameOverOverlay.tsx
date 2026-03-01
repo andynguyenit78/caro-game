@@ -7,6 +7,7 @@ interface GameOverOverlayProps {
     onPlayAgain: () => void;
     onQuit?: () => void;
     playerRole: string;
+    hasWaiting?: boolean;
 }
 
 function ConfettiParticle({ index }: { index: number }) {
@@ -37,14 +38,30 @@ export default function GameOverOverlay({
     onPlayAgain,
     onQuit,
     playerRole,
+    hasWaiting,
 }: GameOverOverlayProps) {
     const [visible, setVisible] = useState(false);
+    const [timeLeft, setTimeLeft] = useState(20);
     const { t } = useLanguage();
 
     useEffect(() => {
         const timer = setTimeout(() => setVisible(true), 50);
         return () => clearTimeout(timer);
     }, []);
+
+    // Auto-quit countdown timer
+    useEffect(() => {
+        if (timeLeft <= 0) {
+            onQuit?.();
+            return;
+        }
+
+        const timer = setInterval(() => {
+            setTimeLeft((prev) => prev - 1);
+        }, 1000);
+
+        return () => clearInterval(timer);
+    }, [timeLeft, onQuit]);
 
     return (
         <div
@@ -64,9 +81,22 @@ export default function GameOverOverlay({
                 <p className="game-over-subtitle">
                     {isWinner ? t('congratsWin', { player: playerRole }) : t('betterLuck')}
                 </p>
+                <p
+                    style={{
+                        fontSize: '0.9rem',
+                        color: 'var(--text-secondary)',
+                        marginBottom: '1rem',
+                    }}
+                >
+                    Returning to home in {timeLeft}s...
+                </p>
                 <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center' }}>
-                    <button className="btn-primary game-over-btn" onClick={onPlayAgain}>
-                        {t('playAgain')}
+                    <button
+                        className="btn-primary game-over-btn"
+                        onClick={onPlayAgain}
+                        disabled={hasWaiting}
+                    >
+                        {hasWaiting ? 'Waiting for opponent...' : t('playAgain')}
                     </button>
                     {onQuit && (
                         <button
