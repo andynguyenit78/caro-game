@@ -22,16 +22,16 @@ function getSystemPref(): 'light' | 'dark' {
 }
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-    /**
-     * Lazy initializer: on the client, read localStorage immediately so the
-     * mode is correct on the very first render — no extra re-render needed.
-     * On the server, fall back to 'system' (hydration mismatch is suppressed
-     * with suppressHydrationWarning on the affected header element).
-     */
-    const [mode, setModeState] = useState<ThemeMode>(() => getInitialMode());
-    const [systemPreference, setSystemPreference] = useState<'light' | 'dark'>(() =>
-        getSystemPref()
-    );
+    const [mode, setModeState] = useState<ThemeMode>('system');
+    const [systemPreference, setSystemPreference] = useState<'light' | 'dark'>('light');
+    const [mounted, setMounted] = useState(false);
+
+    // Initialize from localStorage on client mount
+    useEffect(() => {
+        setModeState(getInitialMode());
+        setSystemPreference(getSystemPref());
+        setMounted(true);
+    }, []);
 
     // Listen to system preference changes
     useEffect(() => {

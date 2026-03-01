@@ -18,12 +18,9 @@ export default function SettingsToolbar() {
     const isHome = pathname === '/';
 
     return (
-        // suppressHydrationWarning: server renders mode='system' but client may
-        // initialize to a different mode from localStorage — this is intentional.
         <header
             className="app-header"
             style={{ opacity: mounted ? 1 : 0, transition: 'opacity 0.2s ease' }}
-            suppressHydrationWarning
         >
             {/* Left side: Back Button + Logo & Title */}
             <div
@@ -63,7 +60,6 @@ export default function SettingsToolbar() {
                 <div className="settings-group">
                     <div className="toggle-pills">
                         <button
-                            suppressHydrationWarning
                             className={`pill ${language === 'en' ? 'active' : ''}`}
                             onClick={() => setLanguage('en')}
                             title="English"
@@ -71,7 +67,6 @@ export default function SettingsToolbar() {
                             🇬🇧 EN
                         </button>
                         <button
-                            suppressHydrationWarning
                             className={`pill ${language === 'vi' ? 'active' : ''}`}
                             onClick={() => setLanguage('vi')}
                             title="Tiếng Việt"
@@ -85,7 +80,6 @@ export default function SettingsToolbar() {
                 <div className="settings-group">
                     <div className="toggle-pills">
                         <button
-                            suppressHydrationWarning
                             className={`pill ${mode === 'light' ? 'active' : ''}`}
                             onClick={() => setMode('light')}
                             title={t('light')}
@@ -93,7 +87,6 @@ export default function SettingsToolbar() {
                             ☀️
                         </button>
                         <button
-                            suppressHydrationWarning
                             className={`pill ${mode === 'system' ? 'active' : ''}`}
                             onClick={() => setMode('system')}
                             title={t('system')}
@@ -101,7 +94,6 @@ export default function SettingsToolbar() {
                             💻
                         </button>
                         <button
-                            suppressHydrationWarning
                             className={`pill ${mode === 'dark' ? 'active' : ''}`}
                             onClick={() => setMode('dark')}
                             title={t('dark')}
