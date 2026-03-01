@@ -37,6 +37,12 @@ export const translations = {
         light: 'Light',
         dark: 'Dark',
         system: 'System',
+
+        // AI Mode
+        playVsAI: 'Play vs AI',
+        aiThinking: 'AI is thinking...',
+        newGame: 'New Game',
+        playFriend: 'Play with Friend',
     },
     vi: {
         // Home / Lobby
@@ -74,6 +80,12 @@ export const translations = {
         light: 'Sáng',
         dark: 'Tối',
         system: 'Hệ thống',
+
+        // AI Mode
+        playVsAI: 'Chơi với AI',
+        aiThinking: 'AI đang suy nghĩ...',
+        newGame: 'Ván Mới',
+        playFriend: 'Chơi với bạn bè',
     },
 } as const;
 

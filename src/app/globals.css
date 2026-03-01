@@ -175,6 +175,54 @@ main {
   opacity: 0.9;
 }
 
+/* Mode Buttons */
+.mode-buttons {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.mode-btn {
+  display: flex !important;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 1.2rem 1rem !important;
+  border-radius: 12px !important;
+  font-size: 1rem !important;
+  gap: 0.4rem;
+  transition: transform 0.2s ease, box-shadow 0.2s ease !important;
+}
+
+.mode-btn:hover {
+  transform: translateY(-3px) !important;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15) !important;
+}
+
+.mode-icon {
+  font-size: 1.8rem;
+}
+
+.mode-label {
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.btn-ai {
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  color: #fff;
+  padding: 0.6rem 1.2rem;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+.btn-ai:hover {
+  transform: translateY(-2px);
+  opacity: 0.9;
+}
+
 /* Animations */
 @keyframes draw {
   from {

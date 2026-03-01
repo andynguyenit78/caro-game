@@ -30,6 +30,10 @@ export default function Home() {
     }
   };
 
+  const playAI = () => {
+    router.push('/ai');
+  };
+
   return (
     <main>
       <div className="glass" style={{ padding: '3rem', maxWidth: '500px', width: '100%', textAlign: 'center' }}>
@@ -38,15 +42,25 @@ export default function Home() {
           <p>{t('subtitle')}</p>
         </div>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem', marginTop: '2rem' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', marginTop: '2rem' }}>
 
-          <button
-            className="btn-primary"
-            style={{ padding: '1rem', fontSize: '1.2rem' }}
-            onClick={createGame}
-          >
-            {t('createRoom')}
-          </button>
+          {/* Mode Buttons */}
+          <div className="mode-buttons">
+            <button
+              className="btn-primary mode-btn"
+              onClick={createGame}
+            >
+              <span className="mode-icon">👥</span>
+              <span className="mode-label">{t('playFriend')}</span>
+            </button>
+            <button
+              className="btn-ai mode-btn"
+              onClick={playAI}
+            >
+              <span className="mode-icon">🤖</span>
+              <span className="mode-label">{t('playVsAI')}</span>
+            </button>
+          </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
             <div style={{ flex: 1, height: '1px', backgroundColor: 'var(--grid-line-color)' }}></div>
