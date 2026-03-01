@@ -8,7 +8,9 @@ export const metadata = {
 export default function AIPage() {
     return (
         <main>
-            <h1 className="header" style={{ marginBottom: '0.5rem' }}>🤖 <span>Caro vs AI</span></h1>
+            <h1 className="header" style={{ marginBottom: '0.5rem' }}>
+                🤖 <span>Caro vs AI</span>
+            </h1>
             <AIBoard />
         </main>
     );

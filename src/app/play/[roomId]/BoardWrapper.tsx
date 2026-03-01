@@ -18,7 +18,11 @@ export default function BoardWrapper({ roomId }: { roomId: string }) {
     }, []);
 
     if (!userId) {
-        return <div className="glass" style={{ padding: '2rem' }}>{t('initPlayer')}</div>;
+        return (
+            <div className="glass" style={{ padding: '2rem' }}>
+                {t('initPlayer')}
+            </div>
+        );
     }
 
     return <Board roomId={roomId} userId={userId} />;

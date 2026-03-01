@@ -10,10 +10,30 @@ import {
 } from '../../lib/playerStats';
 
 const AVATAR_OPTIONS = [
-    '😀', '😎', '🤓', '🧑‍💻', '👨‍🚀', '🥷',
-    '🦊', '🐱', '🐶', '🐼', '🦁', '🐸',
-    '🎯', '⚡', '🔥', '💎', '🌟', '🎮',
-    '🏆', '👑', '🦄', '🐉', '🤖', '👻',
+    '😀',
+    '😎',
+    '🤓',
+    '🧑‍💻',
+    '👨‍🚀',
+    '🥷',
+    '🦊',
+    '🐱',
+    '🐶',
+    '🐼',
+    '🦁',
+    '🐸',
+    '🎯',
+    '⚡',
+    '🔥',
+    '💎',
+    '🌟',
+    '🎮',
+    '🏆',
+    '👑',
+    '🦄',
+    '🐉',
+    '🤖',
+    '👻',
 ];
 
 export default function ProfilePage() {
@@ -58,9 +78,8 @@ export default function ProfilePage() {
         setTimeout(() => setSaved(false), 2000);
     };
 
-    const winRate = stats && stats.gamesPlayed > 0
-        ? Math.round((stats.wins / stats.gamesPlayed) * 100)
-        : 0;
+    const winRate =
+        stats && stats.gamesPlayed > 0 ? Math.round((stats.wins / stats.gamesPlayed) * 100) : 0;
 
     return (
         <main>
@@ -76,15 +95,13 @@ export default function ProfilePage() {
                 <h2>{t('profile')}</h2>
 
                 {/* Avatar Display */}
-                <div className="profile-avatar-display">
-                    {selectedAvatar || '👤'}
-                </div>
+                <div className="profile-avatar-display">{selectedAvatar || '👤'}</div>
 
                 {/* Avatar Picker */}
                 <div className="avatar-picker">
                     <label className="profile-label">{t('chooseAvatar')}</label>
                     <div className="avatar-grid">
-                        {AVATAR_OPTIONS.map(emoji => (
+                        {AVATAR_OPTIONS.map((emoji) => (
                             <button
                                 key={emoji}
                                 className={`avatar-option ${selectedAvatar === emoji ? 'avatar-selected' : ''}`}
@@ -103,7 +120,7 @@ export default function ProfilePage() {
                         type="text"
                         className="profile-input"
                         value={nameInput}
-                        onChange={e => setNameInput(e.target.value)}
+                        onChange={(e) => setNameInput(e.target.value)}
                         placeholder={t('enterName')}
                         maxLength={20}
                     />

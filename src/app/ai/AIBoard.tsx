@@ -82,30 +82,55 @@ export default function AIBoard() {
     return (
         <div className="board-container">
             <div className="dashboard glass">
-                <div className="status-badge" style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: '0.3rem' }}>
-                    <div className="players-row">                        <div className="player-tag">
-                        <span className="icon-x" style={{ fontWeight: 'bold' }}>X</span>
-                        {playerStats && playerStats.avatar && (
-                            <span className="lb-avatar">{playerStats.avatar}</span>
-                        )}
-                        <span>{playerName || t('you')}</span>
-                        {playerStats && playerStats.gamesPlayed > 0 && (
-                            <span className="lb-stats" style={{ marginLeft: '0.2rem' }}>
-                                ({Math.round((playerStats.wins / playerStats.gamesPlayed) * 100)}%)
+                <div
+                    className="status-badge"
+                    style={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'flex-start',
+                        gap: '0.3rem',
+                    }}
+                >
+                    <div className="players-row">
+                        {' '}
+                        <div className="player-tag">
+                            <span className="icon-x" style={{ fontWeight: 'bold' }}>
+                                X
                             </span>
-                        )}
-                        {!editingName && (
-                            <button className="name-edit-btn" onClick={() => { setNameInput(playerName); setEditingName(true); }} title={t('editName')}>
-                                ✏️
-                            </button>
-                        )}
-                    </div>
+                            {playerStats && playerStats.avatar && (
+                                <span className="lb-avatar">{playerStats.avatar}</span>
+                            )}
+                            <span>{playerName || t('you')}</span>
+                            {playerStats && playerStats.gamesPlayed > 0 && (
+                                <span className="lb-stats" style={{ marginLeft: '0.2rem' }}>
+                                    (
+                                    {Math.round((playerStats.wins / playerStats.gamesPlayed) * 100)}
+                                    %)
+                                </span>
+                            )}
+                            {!editingName && (
+                                <button
+                                    className="name-edit-btn"
+                                    onClick={() => {
+                                        setNameInput(playerName);
+                                        setEditingName(true);
+                                    }}
+                                    title={t('editName')}
+                                >
+                                    ✏️
+                                </button>
+                            )}
+                        </div>
                         <span className="vs-text">VS</span>
                         <div className="player-tag">
-                            <span className="icon-o" style={{ fontWeight: 'bold' }}>O</span>
+                            <span className="icon-o" style={{ fontWeight: 'bold' }}>
+                                O
+                            </span>
                             <span className="lb-avatar">🤖</span>
                             <span>AI</span>
-                            <span className="lb-stats" style={{ marginLeft: '0.2rem' }}>(99%)</span>
+                            <span className="lb-stats" style={{ marginLeft: '0.2rem' }}>
+                                (99%)
+                            </span>
                         </div>
                     </div>
                     {editingName && (
@@ -114,13 +139,17 @@ export default function AIBoard() {
                                 className="name-input"
                                 type="text"
                                 value={nameInput}
-                                onChange={e => setNameInput(e.target.value)}
+                                onChange={(e) => setNameInput(e.target.value)}
                                 placeholder={t('enterName')}
                                 maxLength={20}
                                 autoFocus
-                                onKeyDown={e => e.key === 'Enter' && saveName()}
+                                onKeyDown={(e) => e.key === 'Enter' && saveName()}
                             />
-                            <button className="btn-primary" style={{ padding: '0.3rem 0.6rem', fontSize: '0.75rem' }} onClick={saveName}>
+                            <button
+                                className="btn-primary"
+                                style={{ padding: '0.3rem 0.6rem', fontSize: '0.75rem' }}
+                                onClick={saveName}
+                            >
                                 ✓
                             </button>
                         </div>
@@ -140,12 +169,16 @@ export default function AIBoard() {
                 className="board glass"
                 style={{
                     padding: '0.2rem',
-                    pointerEvents: (gameState.status !== 'playing' || gameState.aiThinking) ? 'none' : 'auto'
+                    pointerEvents:
+                        gameState.status !== 'playing' || gameState.aiThinking ? 'none' : 'auto',
                 }}
             >
-                {gameState.board.map((row: Player[], rowIndex: number) => (
+                {gameState.board.map((row: Player[], rowIndex: number) =>
                     row.map((cell: Player, colIndex: number) => {
-                        const isLastMove = gameState.lastMove && gameState.lastMove[0] === rowIndex && gameState.lastMove[1] === colIndex;
+                        const isLastMove =
+                            gameState.lastMove &&
+                            gameState.lastMove[0] === rowIndex &&
+                            gameState.lastMove[1] === colIndex;
                         return (
                             <div
                                 key={`${rowIndex}-${colIndex}`}
@@ -157,7 +190,7 @@ export default function AIBoard() {
                             </div>
                         );
                     })
-                ))}
+                )}
             </div>
             {gameState.status === 'finished' && (
                 <GameOverOverlay

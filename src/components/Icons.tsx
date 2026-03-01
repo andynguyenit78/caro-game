@@ -12,7 +12,11 @@ export const IconX = ({ className = '' }: { className?: string }) => (
     >
         <path
             d="M20 20 L80 80 M80 20 L20 80"
-            style={{ strokeDasharray: 120, strokeDashoffset: 0, animation: 'draw 0.3s ease-out forwards' }}
+            style={{
+                strokeDasharray: 120,
+                strokeDashoffset: 0,
+                animation: 'draw 0.3s ease-out forwards',
+            }}
         />
     </svg>
 );
@@ -29,7 +33,11 @@ export const IconO = ({ className = '' }: { className?: string }) => (
             cx="50"
             cy="50"
             r="34"
-            style={{ strokeDasharray: 215, strokeDashoffset: 0, animation: 'drawCircle 0.4s ease-out forwards' }}
+            style={{
+                strokeDasharray: 215,
+                strokeDashoffset: 0,
+                animation: 'drawCircle 0.4s ease-out forwards',
+            }}
         />
     </svg>
 );

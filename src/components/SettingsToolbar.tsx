@@ -20,7 +20,14 @@ export default function SettingsToolbar() {
     return (
         <header className="app-header" style={{ visibility: mounted ? 'visible' : 'hidden' }}>
             {/* Left side: Back Button + Logo & Title */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', pointerEvents: 'auto' }}>
+            <div
+                style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '1rem',
+                    pointerEvents: 'auto',
+                }}
+            >
                 <div
                     className="app-brand"
                     onClick={() => router.push('/')}

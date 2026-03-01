@@ -26,12 +26,13 @@ export function useAIGameState() {
     });
 
     const makeMove = useCallback((row: number, col: number) => {
-        setGameState(prev => {
-            if (prev.status !== 'playing' || prev.currentTurn !== 'X' || prev.aiThinking) return prev;
+        setGameState((prev) => {
+            if (prev.status !== 'playing' || prev.currentTurn !== 'X' || prev.aiThinking)
+                return prev;
             if (prev.board[row][col] !== '') return prev;
 
             // Human moves
-            const newBoard = prev.board.map(r => [...r]);
+            const newBoard = prev.board.map((r) => [...r]);
             newBoard[row][col] = 'X';
 
             if (checkWin(newBoard, row, col, 'X')) {
@@ -58,10 +59,10 @@ export function useAIGameState() {
 
         // Delayed AI response
         setTimeout(() => {
-            setGameState(prev => {
+            setGameState((prev) => {
                 if (!prev.aiThinking || prev.status !== 'playing') return prev;
 
-                const newBoard = prev.board.map(r => [...r]);
+                const newBoard = prev.board.map((r) => [...r]);
                 const [aiRow, aiCol] = findBestMove(newBoard, 'O');
                 newBoard[aiRow][aiCol] = 'O';
 

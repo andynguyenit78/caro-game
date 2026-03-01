@@ -1,7 +1,13 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { Player, createEmptyBoard, checkWin } from '../lib/gameLogic';
 import { PlayerStats, recordGameResult, updatePlayerName } from '../lib/playerStats';
-import { GameState, subscribeToGame, subscribeToPlayer, setGameState, updateGameState } from '../lib/gameService';
+import {
+    GameState,
+    subscribeToGame,
+    subscribeToPlayer,
+    setGameState,
+    updateGameState,
+} from '../lib/gameService';
 
 const createDefaultState = (): GameState => ({
     board: createEmptyBoard(15),
@@ -105,7 +111,7 @@ export function useGameState(roomId: string, userId: string) {
             const localName = getLocalName();
             const updates: Record<string, string> = {
                 'players/O': userId,
-                'status': 'playing',
+                status: 'playing',
                 'playerNames/O': localName,
             };
             await updateGameState(roomId, updates);
@@ -113,32 +119,35 @@ export function useGameState(roomId: string, userId: string) {
         }
     }, [roomId, userId, gameState, myPlayerRole]);
 
-    const makeMove = useCallback(async (row: number, col: number) => {
-        if (
-            gameState.status !== 'playing' ||
-            gameState.board[row][col] !== '' ||
-            gameState.currentPlayer !== myPlayerRole ||
-            gameState.winner !== ''
-        ) {
-            return;
-        }
+    const makeMove = useCallback(
+        async (row: number, col: number) => {
+            if (
+                gameState.status !== 'playing' ||
+                gameState.board[row][col] !== '' ||
+                gameState.currentPlayer !== myPlayerRole ||
+                gameState.winner !== ''
+            ) {
+                return;
+            }
 
-        const newBoard = gameState.board.map((r: Player[]) => [...r]);
-        newBoard[row][col] = myPlayerRole;
+            const newBoard = gameState.board.map((r: Player[]) => [...r]);
+            newBoard[row][col] = myPlayerRole;
 
-        const isWin = checkWin(newBoard, row, col, myPlayerRole);
-        const nextPlayer = myPlayerRole === 'X' ? 'O' : 'X';
+            const isWin = checkWin(newBoard, row, col, myPlayerRole);
+            const nextPlayer = myPlayerRole === 'X' ? 'O' : 'X';
 
-        const updates = {
-            board: newBoard,
-            currentPlayer: isWin ? gameState.currentPlayer : nextPlayer,
-            winner: isWin ? myPlayerRole : '',
-            status: isWin ? 'finished' : 'playing',
-            lastMove: [row, col],
-        };
+            const updates = {
+                board: newBoard,
+                currentPlayer: isWin ? gameState.currentPlayer : nextPlayer,
+                winner: isWin ? myPlayerRole : '',
+                status: isWin ? 'finished' : 'playing',
+                lastMove: [row, col],
+            };
 
-        await updateGameState(roomId, updates);
-    }, [roomId, gameState, myPlayerRole]);
+            await updateGameState(roomId, updates);
+        },
+        [roomId, gameState, myPlayerRole]
+    );
 
     const resetGame = useCallback(async () => {
         if (myPlayerRole === '') return;
@@ -156,7 +165,10 @@ export function useGameState(roomId: string, userId: string) {
     }, [roomId, myPlayerRole]);
 
     // Fetch stats for both players
-    const [playersStats, setPlayersStats] = useState<{ X: PlayerStats | null, O: PlayerStats | null }>({ X: null, O: null });
+    const [playersStats, setPlayersStats] = useState<{
+        X: PlayerStats | null;
+        O: PlayerStats | null;
+    }>({ X: null, O: null });
 
     useEffect(() => {
         if (!gameState.players.X && !gameState.players.O) return;
@@ -165,13 +177,13 @@ export function useGameState(roomId: string, userId: string) {
         let unsubO: (() => void) | undefined;
 
         if (gameState.players.X) {
-            unsubX = subscribeToPlayer(gameState.players.X, data => {
-                setPlayersStats(prev => ({ ...prev, X: data }));
+            unsubX = subscribeToPlayer(gameState.players.X, (data) => {
+                setPlayersStats((prev) => ({ ...prev, X: data }));
             });
         }
         if (gameState.players.O) {
-            unsubO = subscribeToPlayer(gameState.players.O, data => {
-                setPlayersStats(prev => ({ ...prev, O: data }));
+            unsubO = subscribeToPlayer(gameState.players.O, (data) => {
+                setPlayersStats((prev) => ({ ...prev, O: data }));
             });
         }
 

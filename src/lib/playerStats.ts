@@ -29,9 +29,8 @@ export async function getOrCreateProfile(userId: string): Promise<PlayerStats> {
     }
 
     // Create new profile
-    const localName = typeof window !== 'undefined'
-        ? localStorage.getItem('caroPlayerName') || ''
-        : '';
+    const localName =
+        typeof window !== 'undefined' ? localStorage.getItem('caroPlayerName') || '' : '';
     const newProfile: PlayerStats = { ...defaultStats, name: localName };
     await update(ref(db, `users/${userId}`), newProfile);
     return newProfile;
@@ -155,4 +154,3 @@ export async function fetchLeaderboard(limit = 10): Promise<LeaderboardEntry[]> 
 
     return entries.slice(0, limit);
 }
-

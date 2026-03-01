@@ -10,8 +10,18 @@ import { updatePlayerName } from '../lib/playerStats';
 
 const MOVE_TIMER_SECONDS = 30;
 
-export default function Board({ roomId, userId }: { roomId: string, userId: string }) {
-    const { gameState, myPlayerRole, opponentName, playersStats, makeMove, joinGame, resetGame, isMyTurn, lastMove } = useGameState(roomId, userId);
+export default function Board({ roomId, userId }: { roomId: string; userId: string }) {
+    const {
+        gameState,
+        myPlayerRole,
+        opponentName,
+        playersStats,
+        makeMove,
+        joinGame,
+        resetGame,
+        isMyTurn,
+        lastMove,
+    } = useGameState(roomId, userId);
     const { t } = useLanguage();
     const [playerName, setPlayerName] = useState('');
     const [editingName, setEditingName] = useState(false);
@@ -28,7 +38,11 @@ export default function Board({ roomId, userId }: { roomId: string, userId: stri
     // Sound on move
     useEffect(() => {
         const boardStr = JSON.stringify(gameState.board);
-        if (prevBoardRef.current && prevBoardRef.current !== boardStr && gameState.status !== 'loading') {
+        if (
+            prevBoardRef.current &&
+            prevBoardRef.current !== boardStr &&
+            gameState.status !== 'loading'
+        ) {
             playMoveSound();
         }
         prevBoardRef.current = boardStr;
@@ -54,7 +68,7 @@ export default function Board({ roomId, userId }: { roomId: string, userId: stri
         }
         setTimeLeft(MOVE_TIMER_SECONDS);
         const interval = setInterval(() => {
-            setTimeLeft(prev => {
+            setTimeLeft((prev) => {
                 if (prev <= 1) return MOVE_TIMER_SECONDS;
                 return prev - 1;
             });
@@ -79,7 +93,11 @@ export default function Board({ roomId, userId }: { roomId: string, userId: stri
     }, [nameInput, userId]);
 
     if (!gameState || gameState.status === 'loading') {
-        return <div className="glass" style={{ padding: '2rem' }}>{t('loadingGame')}</div>;
+        return (
+            <div className="glass" style={{ padding: '2rem' }}>
+                {t('loadingGame')}
+            </div>
+        );
     }
 
     const handleCellClick = (row: number, col: number) => {
@@ -109,24 +127,54 @@ export default function Board({ roomId, userId }: { roomId: string, userId: stri
     return (
         <div className="board-container">
             <div className="dashboard glass">
-                <div className="status-badge" style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: '0.3rem' }}>
+                <div
+                    className="status-badge"
+                    style={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'flex-start',
+                        gap: '0.3rem',
+                    }}
+                >
                     <div className="players-row">
-
                         <div className="player-tag">
-                            <span className={myPlayerRole === 'X' ? 'icon-x' : 'icon-o'} style={{ fontWeight: 'bold' }}>
+                            <span
+                                className={myPlayerRole === 'X' ? 'icon-x' : 'icon-o'}
+                                style={{ fontWeight: 'bold' }}
+                            >
                                 {myPlayerRole || '?'}
                             </span>
-                            {playersStats && myPlayerRole && playersStats[myPlayerRole as 'X' | 'O']?.avatar && (
-                                <span className="lb-avatar">{playersStats[myPlayerRole as 'X' | 'O']?.avatar}</span>
-                            )}
+                            {playersStats &&
+                                myPlayerRole &&
+                                playersStats[myPlayerRole as 'X' | 'O']?.avatar && (
+                                    <span className="lb-avatar">
+                                        {playersStats[myPlayerRole as 'X' | 'O']?.avatar}
+                                    </span>
+                                )}
                             <span>{playerName || t('you')}</span>
-                            {playersStats && myPlayerRole && (playersStats[myPlayerRole as 'X' | 'O']?.gamesPlayed ?? 0) > 0 && (
-                                <span className="lb-stats" style={{ marginLeft: '0.2rem' }}>
-                                    ({Math.round(((playersStats[myPlayerRole as 'X' | 'O']?.wins ?? 0) / (playersStats[myPlayerRole as 'X' | 'O']?.gamesPlayed ?? 1)) * 100)}%)
-                                </span>
-                            )}
+                            {playersStats &&
+                                myPlayerRole &&
+                                (playersStats[myPlayerRole as 'X' | 'O']?.gamesPlayed ?? 0) > 0 && (
+                                    <span className="lb-stats" style={{ marginLeft: '0.2rem' }}>
+                                        (
+                                        {Math.round(
+                                            ((playersStats[myPlayerRole as 'X' | 'O']?.wins ?? 0) /
+                                                (playersStats[myPlayerRole as 'X' | 'O']
+                                                    ?.gamesPlayed ?? 1)) *
+                                                100
+                                        )}
+                                        %)
+                                    </span>
+                                )}
                             {!editingName && (
-                                <button className="name-edit-btn" onClick={() => { setNameInput(playerName); setEditingName(true); }} title={t('editName')}>
+                                <button
+                                    className="name-edit-btn"
+                                    onClick={() => {
+                                        setNameInput(playerName);
+                                        setEditingName(true);
+                                    }}
+                                    title={t('editName')}
+                                >
                                     ✏️
                                 </button>
                             )}
@@ -135,18 +183,39 @@ export default function Board({ roomId, userId }: { roomId: string, userId: stri
                             <>
                                 <span className="vs-text">VS</span>
                                 <div className="player-tag">
-                                    <span className={opponentRole === 'X' ? 'icon-x' : 'icon-o'} style={{ fontWeight: 'bold' }}>
+                                    <span
+                                        className={opponentRole === 'X' ? 'icon-x' : 'icon-o'}
+                                        style={{ fontWeight: 'bold' }}
+                                    >
                                         {opponentRole}
                                     </span>
-                                    {playersStats && opponentRole && playersStats[opponentRole as 'X' | 'O']?.avatar && (
-                                        <span className="lb-avatar">{playersStats[opponentRole as 'X' | 'O']?.avatar}</span>
-                                    )}
+                                    {playersStats &&
+                                        opponentRole &&
+                                        playersStats[opponentRole as 'X' | 'O']?.avatar && (
+                                            <span className="lb-avatar">
+                                                {playersStats[opponentRole as 'X' | 'O']?.avatar}
+                                            </span>
+                                        )}
                                     <span>{opponentName || t('opponent')}</span>
-                                    {playersStats && opponentRole && (playersStats[opponentRole as 'X' | 'O']?.gamesPlayed ?? 0) > 0 && (
-                                        <span className="lb-stats" style={{ marginLeft: '0.2rem' }}>
-                                            ({Math.round(((playersStats[opponentRole as 'X' | 'O']?.wins ?? 0) / (playersStats[opponentRole as 'X' | 'O']?.gamesPlayed ?? 1)) * 100)}%)
-                                        </span>
-                                    )}
+                                    {playersStats &&
+                                        opponentRole &&
+                                        (playersStats[opponentRole as 'X' | 'O']?.gamesPlayed ??
+                                            0) > 0 && (
+                                            <span
+                                                className="lb-stats"
+                                                style={{ marginLeft: '0.2rem' }}
+                                            >
+                                                (
+                                                {Math.round(
+                                                    ((playersStats[opponentRole as 'X' | 'O']
+                                                        ?.wins ?? 0) /
+                                                        (playersStats[opponentRole as 'X' | 'O']
+                                                            ?.gamesPlayed ?? 1)) *
+                                                        100
+                                                )}
+                                                %)
+                                            </span>
+                                        )}
                                 </div>
                             </>
                         )}
@@ -157,13 +226,17 @@ export default function Board({ roomId, userId }: { roomId: string, userId: stri
                                 className="name-input"
                                 type="text"
                                 value={nameInput}
-                                onChange={e => setNameInput(e.target.value)}
+                                onChange={(e) => setNameInput(e.target.value)}
                                 placeholder={t('enterName')}
                                 maxLength={20}
                                 autoFocus
-                                onKeyDown={e => e.key === 'Enter' && saveName()}
+                                onKeyDown={(e) => e.key === 'Enter' && saveName()}
                             />
-                            <button className="btn-primary" style={{ padding: '0.3rem 0.6rem', fontSize: '0.75rem' }} onClick={saveName}>
+                            <button
+                                className="btn-primary"
+                                style={{ padding: '0.3rem 0.6rem', fontSize: '0.75rem' }}
+                                onClick={saveName}
+                            >
                                 ✓
                             </button>
                         </div>
@@ -190,12 +263,13 @@ export default function Board({ roomId, userId }: { roomId: string, userId: stri
                 style={{
                     padding: '0.2rem',
                     opacity: gameState.status === 'waiting' ? 0.5 : 1,
-                    pointerEvents: (gameState.status !== 'playing' || !isMyTurn) ? 'none' : 'auto'
+                    pointerEvents: gameState.status !== 'playing' || !isMyTurn ? 'none' : 'auto',
                 }}
             >
-                {gameState.board.map((row: Player[], rowIndex: number) => (
+                {gameState.board.map((row: Player[], rowIndex: number) =>
                     row.map((cell: Player, colIndex: number) => {
-                        const isLastMove = lastMove && lastMove[0] === rowIndex && lastMove[1] === colIndex;
+                        const isLastMove =
+                            lastMove && lastMove[0] === rowIndex && lastMove[1] === colIndex;
                         return (
                             <div
                                 key={`${rowIndex}-${colIndex}`}
@@ -207,7 +281,7 @@ export default function Board({ roomId, userId }: { roomId: string, userId: stri
                             </div>
                         );
                     })
-                ))}
+                )}
             </div>
             {gameState.status === 'finished' && myPlayerRole && (
                 <GameOverOverlay

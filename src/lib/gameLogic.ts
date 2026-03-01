@@ -6,10 +6,10 @@ export function checkWin(board: BoardState, row: number, col: number, player: Pl
     if (player === '') return false;
 
     const directions = [
-        [0, 1],   // horizontal
-        [1, 0],   // vertical
-        [1, 1],   // diagonal right
-        [1, -1]   // diagonal left
+        [0, 1], // horizontal
+        [1, 0], // vertical
+        [1, 1], // diagonal right
+        [1, -1], // diagonal left
     ];
 
     const rows = board.length;

@@ -31,7 +31,11 @@ function ConfettiParticle({ index }: { index: number }) {
     );
 }
 
-export default function GameOverOverlay({ isWinner, onPlayAgain, playerRole }: GameOverOverlayProps) {
+export default function GameOverOverlay({
+    isWinner,
+    onPlayAgain,
+    playerRole,
+}: GameOverOverlayProps) {
     const [visible, setVisible] = useState(false);
     const { t } = useLanguage();
 
@@ -41,7 +45,9 @@ export default function GameOverOverlay({ isWinner, onPlayAgain, playerRole }: G
     }, []);
 
     return (
-        <div className={`game-over-overlay ${visible ? 'visible' : ''} ${isWinner ? 'win' : 'lose'}`}>
+        <div
+            className={`game-over-overlay ${visible ? 'visible' : ''} ${isWinner ? 'win' : 'lose'}`}
+        >
             {isWinner && (
                 <div className="confetti-container">
                     {Array.from({ length: 60 }).map((_, i) => (
@@ -51,16 +57,10 @@ export default function GameOverOverlay({ isWinner, onPlayAgain, playerRole }: G
             )}
 
             <div className={`game-over-card glass ${isWinner ? 'win-card' : 'lose-card'}`}>
-                <div className="game-over-emoji">
-                    {isWinner ? '🏆' : '😢'}
-                </div>
-                <h2 className="game-over-title">
-                    {isWinner ? t('victory') : t('defeat')}
-                </h2>
+                <div className="game-over-emoji">{isWinner ? '🏆' : '😢'}</div>
+                <h2 className="game-over-title">{isWinner ? t('victory') : t('defeat')}</h2>
                 <p className="game-over-subtitle">
-                    {isWinner
-                        ? t('congratsWin', { player: playerRole })
-                        : t('betterLuck')}
+                    {isWinner ? t('congratsWin', { player: playerRole }) : t('betterLuck')}
                 </p>
                 <button className="btn-primary game-over-btn" onClick={onPlayAgain}>
                     {t('playAgain')}

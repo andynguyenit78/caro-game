@@ -26,15 +26,18 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
         document.documentElement.setAttribute('lang', lang);
     }, []);
 
-    const t = useCallback((key: TranslationKey, vars?: Record<string, string>): string => {
-        let text: string = translations[language][key] || translations.en[key] || key;
-        if (vars) {
-            Object.entries(vars).forEach(([k, v]) => {
-                text = text.replace(`{${k}}`, v);
-            });
-        }
-        return text;
-    }, [language]);
+    const t = useCallback(
+        (key: TranslationKey, vars?: Record<string, string>): string => {
+            let text: string = translations[language][key] || translations.en[key] || key;
+            if (vars) {
+                Object.entries(vars).forEach(([k, v]) => {
+                    text = text.replace(`{${k}}`, v);
+                });
+            }
+            return text;
+        },
+        [language]
+    );
 
     return (
         <LanguageContext.Provider value={{ language, setLanguage, t }}>

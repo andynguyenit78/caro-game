@@ -50,6 +50,9 @@ export async function setGameState(roomId: string, state: GameState) {
 /**
  * Applies partial updates to a game room
  */
-export async function updateGameState(roomId: string, updates: Partial<GameState> | Record<string, unknown>) {
+export async function updateGameState(
+    roomId: string,
+    updates: Partial<GameState> | Record<string, unknown>
+) {
     await update(ref(db, `games/${roomId}`), updates);
 }

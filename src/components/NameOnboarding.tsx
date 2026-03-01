@@ -38,11 +38,14 @@ export default function NameOnboarding({ onComplete }: Props) {
                 <div className="onboarding-emoji">🎮</div>
                 <h2>{t('welcomeTitle')}</h2>
                 <p style={{ opacity: 0.7, marginBottom: '1.5rem' }}>{t('welcomeSubtitle')}</p>
-                <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem', width: '100%' }}>
+                <form
+                    onSubmit={handleSubmit}
+                    style={{ display: 'flex', flexDirection: 'column', gap: '1rem', width: '100%' }}
+                >
                     <input
                         type="text"
                         value={name}
-                        onChange={e => setName(e.target.value)}
+                        onChange={(e) => setName(e.target.value)}
                         placeholder={t('enterName')}
                         maxLength={20}
                         autoFocus

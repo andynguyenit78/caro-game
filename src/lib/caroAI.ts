@@ -69,9 +69,9 @@ function evaluateLine(
  */
 function scorePosition(board: BoardState, row: number, col: number, player: Player): number {
     const directions = [
-        [0, 1],  // horizontal
-        [1, 0],  // vertical
-        [1, 1],  // diagonal right
+        [0, 1], // horizontal
+        [1, 0], // vertical
+        [1, 1], // diagonal right
         [1, -1], // diagonal left
     ];
 
@@ -111,8 +111,10 @@ function getCandidateMoves(board: BoardState): [number, number][] {
                         const nr = r + dr;
                         const nc = c + dc;
                         if (
-                            nr >= 0 && nr < BOARD_SIZE &&
-                            nc >= 0 && nc < BOARD_SIZE &&
+                            nr >= 0 &&
+                            nr < BOARD_SIZE &&
+                            nc >= 0 &&
+                            nc < BOARD_SIZE &&
                             board[nr][nc] === ''
                         ) {
                             candidates.add(`${nr},${nc}`);
@@ -123,7 +125,7 @@ function getCandidateMoves(board: BoardState): [number, number][] {
         }
     }
 
-    return Array.from(candidates).map(key => {
+    return Array.from(candidates).map((key) => {
         const [r, c] = key.split(',').map(Number);
         return [r, c] as [number, number];
     });
