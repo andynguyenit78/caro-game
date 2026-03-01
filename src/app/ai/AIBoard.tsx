@@ -2,6 +2,7 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { useAIGameState } from '../../hooks/useAIGameState';
 import { IconX, IconO } from '../../components/Icons';
+import { useRouter } from 'next/navigation';
 import GameOverOverlay from '../../components/GameOverOverlay';
 import PlayerTag from '../../components/PlayerTag';
 import InlineNameEditor from '../../components/InlineNameEditor';
@@ -21,6 +22,7 @@ export default function AIBoard() {
     const hasRecordedResult = useRef(false);
     const [playerName, setPlayerName] = useState('');
     const [userId, setUserId] = useState('');
+    const router = useRouter();
 
     /** Load localStorage values on mount (client-only, safe for SSR). */
     useEffect(() => {
@@ -161,6 +163,7 @@ export default function AIBoard() {
                 <GameOverOverlay
                     isWinner={gameState.winner === 'X'}
                     onPlayAgain={handleReset}
+                    onQuit={() => router.push('/')}
                     playerRole={gameState.winner || ''}
                 />
             )}
