@@ -73,7 +73,22 @@ export default function Home() {
 
           {/* Stats Badge */}
           {isLoadingStats ? (
-            <div className="stats-badge skeleton" style={{ width: '250px', height: '44px', margin: '1.2rem auto 0' }} />
+            <div className="stats-badge skeleton">
+              <div className="stat-item" style={{ visibility: 'hidden' }}>
+                <span className="stat-value">0</span>
+                <span className="stat-label">{t('wins')}</span>
+              </div>
+              <div className="stat-divider" style={{ visibility: 'hidden' }} />
+              <div className="stat-item" style={{ visibility: 'hidden' }}>
+                <span className="stat-value">0</span>
+                <span className="stat-label">{t('losses')}</span>
+              </div>
+              <div className="stat-divider" style={{ visibility: 'hidden' }} />
+              <div className="stat-item" style={{ visibility: 'hidden' }}>
+                <span className="stat-value">0%</span>
+                <span className="stat-label">{t('winRate')}</span>
+              </div>
+            </div>
           ) : stats && (
             <div className="stats-badge">
               <div className="stat-item">
@@ -142,9 +157,15 @@ export default function Home() {
             <h3 className="leaderboard-title">🏆 {t('leaderboard')}</h3>
             <div className="leaderboard-list">
               {isLoadingLeaderboard ? (
-                // Skeleton rows
+                // Exact clone skeleton rows to prevent layout shift
                 Array.from({ length: 5 }).map((_, i) => (
-                  <div key={i} className="leaderboard-row skeleton" style={{ height: '44px', marginBottom: '8px' }} />
+                  <div key={i} className="leaderboard-row skeleton">
+                    <span className="lb-rank" style={{ visibility: 'hidden' }}>#1</span>
+                    <span className="lb-avatar" style={{ visibility: 'hidden' }}>👤</span>
+                    <span className="lb-name" style={{ visibility: 'hidden' }}>Loading Name...</span>
+                    <span className="lb-stats" style={{ visibility: 'hidden' }}>0W 0L</span>
+                    <span className="lb-winrate" style={{ visibility: 'hidden' }}>100%</span>
+                  </div>
                 ))
               ) : (
                 leaderboard.map((entry, index) => (
