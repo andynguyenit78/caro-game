@@ -9,6 +9,7 @@ import {
     PlayerStats,
     LeaderboardEntry,
 } from '../lib/playerStats';
+import { getRankFromScore, getRankIcon } from '../lib/rankSystem';
 
 export default function Home() {
     const router = useRouter();
@@ -61,6 +62,9 @@ export default function Home() {
 
     const winRate =
         stats && stats.gamesPlayed > 0 ? Math.round((stats.wins / stats.gamesPlayed) * 100) : 0;
+    const myScore = stats?.score ?? 0;
+    const myRank = getRankFromScore(myScore);
+    const myRankIcon = getRankIcon(myScore);
 
     const myUserId = typeof window !== 'undefined' ? localStorage.getItem('caroUserId') : null;
 
@@ -100,22 +104,34 @@ export default function Home() {
                         </div>
                     ) : (
                         stats && (
-                            <div className="stats-badge">
-                                <div className="stat-item">
-                                    <span className="stat-value">{stats.wins || 0}</span>
-                                    <span className="stat-label">{t('wins')}</span>
+                            <>
+                                {/* Rank card */}
+                                <div className="rank-card">
+                                    <span className="rank-card-icon">{myRankIcon}</span>
+                                    <div className="rank-card-info">
+                                        <span className="rank-card-title">{myRank.title}</span>
+                                        <span className="rank-card-score">
+                                            {myScore} pts • Lv.{myRank.level}
+                                        </span>
+                                    </div>
                                 </div>
-                                <div className="stat-divider" />
-                                <div className="stat-item">
-                                    <span className="stat-value">{stats.losses || 0}</span>
-                                    <span className="stat-label">{t('losses')}</span>
+                                <div className="stats-badge">
+                                    <div className="stat-item">
+                                        <span className="stat-value">{stats.wins || 0}</span>
+                                        <span className="stat-label">{t('wins')}</span>
+                                    </div>
+                                    <div className="stat-divider" />
+                                    <div className="stat-item">
+                                        <span className="stat-value">{stats.losses || 0}</span>
+                                        <span className="stat-label">{t('losses')}</span>
+                                    </div>
+                                    <div className="stat-divider" />
+                                    <div className="stat-item">
+                                        <span className="stat-value">{winRate}%</span>
+                                        <span className="stat-label">{t('winRate')}</span>
+                                    </div>
                                 </div>
-                                <div className="stat-divider" />
-                                <div className="stat-item">
-                                    <span className="stat-value">{winRate}%</span>
-                                    <span className="stat-label">{t('winRate')}</span>
-                                </div>
-                            </div>
+                            </>
                         )
                     )}
 
@@ -242,10 +258,10 @@ export default function Home() {
                                               <span className="lb-avatar">{entry.avatar}</span>
                                           )}
                                           <span className="lb-name">{entry.name}</span>
-                                          <span className="lb-stats">
-                                              {entry.wins}W {entry.losses}L
+                                          <span className="lb-rank-badge" title={entry.rankTitle}>
+                                              {getRankIcon(entry.score)} Lv.{entry.level}
                                           </span>
-                                          <span className="lb-winrate">{entry.winRate}%</span>
+                                          <span className="lb-score">{entry.score} pts</span>
                                       </div>
                                   ))}
                         </div>

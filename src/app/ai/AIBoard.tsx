@@ -111,6 +111,7 @@ export default function AIBoard() {
                                 wins: 99,
                                 losses: 1,
                                 gamesPlayed: 100,
+                                score: 9999,
                             }}
                         />
                     </div>

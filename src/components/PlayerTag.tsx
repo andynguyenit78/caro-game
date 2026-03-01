@@ -1,13 +1,14 @@
 'use client';
 import React from 'react';
 import { PlayerStats } from '../lib/playerStats';
+import { getRankFromScore, getRankIcon } from '../lib/rankSystem';
 
 interface PlayerTagProps {
     /** Player role identifier ('X' or 'O') */
     role: string;
     /** Display name of the player */
     displayName: string;
-    /** Player stats for avatar and win-rate display */
+    /** Player stats for avatar, rank, and win-rate display */
     stats?: PlayerStats | null;
     /** Whether to show the edit-name button */
     isEditable?: boolean;
@@ -16,7 +17,7 @@ interface PlayerTagProps {
 }
 
 /**
- * Reusable player identity badge — shows role icon, avatar, name, and win-rate.
+ * Reusable player identity badge — shows role icon, avatar, rank, name, and score.
  * Used by both the multiplayer Board and the AI Board.
  */
 export default function PlayerTag({
@@ -27,8 +28,9 @@ export default function PlayerTag({
     onEditClick,
 }: PlayerTagProps) {
     const roleColorClass = role === 'X' ? 'icon-x' : 'icon-o';
-    const winRate =
-        stats && stats.gamesPlayed > 0 ? Math.round((stats.wins / stats.gamesPlayed) * 100) : null;
+    const score = stats?.score ?? 0;
+    const rank = getRankFromScore(score);
+    const rankIcon = getRankIcon(score);
 
     return (
         <div className="player-tag">
@@ -40,9 +42,10 @@ export default function PlayerTag({
 
             <span>{displayName}</span>
 
-            {winRate !== null && (
-                <span className="lb-stats" style={{ marginLeft: '0.2rem' }}>
-                    ({winRate}%)
+            {stats && (
+                <span className="rank-badge" title={`${rank.title} — ${score} pts`}>
+                    {rankIcon}
+                    <span className="rank-level">Lv.{rank.level}</span>
                 </span>
             )}
 
