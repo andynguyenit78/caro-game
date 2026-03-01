@@ -18,10 +18,7 @@ export default function SettingsToolbar() {
     const isHome = pathname === '/';
 
     return (
-        <header
-            className="app-header"
-            style={{ opacity: mounted ? 1 : 0, transition: 'opacity 0.2s ease' }}
-        >
+        <header className="app-header" style={{ visibility: mounted ? 'visible' : 'hidden' }}>
             {/* Left side: Back Button + Logo & Title */}
             <div
                 style={{

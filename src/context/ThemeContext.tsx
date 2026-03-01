@@ -25,6 +25,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     const [mode, setModeState] = useState<ThemeMode>('system');
     const [systemPreference, setSystemPreference] = useState<'light' | 'dark'>('light');
     const [mounted, setMounted] = useState(false);
+    console.log('mounted', mounted, systemPreference);
 
     // Initialize from localStorage on client mount
     useEffect(() => {
@@ -75,7 +76,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 
     return (
         <ThemeContext.Provider value={{ mode, setMode, resolvedTheme }}>
-            {children}
+            <div style={{ display: mounted ? 'block' : 'none' }}>{children}</div>
         </ThemeContext.Provider>
     );
 }

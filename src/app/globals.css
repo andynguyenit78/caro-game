@@ -1075,7 +1075,7 @@ button {
 .stats-badge {
     display: flex;
     align-items: center;
-    justify-content: center;
+    justify-content: space-around;
     gap: 1rem;
     margin-top: 1.2rem;
     padding: 0.7rem 1.2rem;
