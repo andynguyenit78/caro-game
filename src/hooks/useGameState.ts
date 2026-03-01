@@ -9,30 +9,82 @@ import {
     updateGameState,
 } from '../lib/gameService';
 
+// ─── Constants ──────────────────────────────────────────────────────────────────
+
+const BOARD_SIZE = 15;
+const DEFAULT_TIMER_SECONDS = 30;
+
+// ─── Helpers (pure functions, no hooks) ─────────────────────────────────────────
+
+/** Factory for the initial loading-state placeholder. */
 const createDefaultState = (): GameState => ({
-    board: createEmptyBoard(15),
+    board: createEmptyBoard(BOARD_SIZE),
     currentPlayer: 'X',
     winner: '',
     status: 'loading',
     players: {},
 });
 
+/** Read the player display name from localStorage (safe for SSR). */
+function getLocalPlayerName(): string {
+    if (typeof window === 'undefined') return '';
+    return localStorage.getItem('caroPlayerName') || '';
+}
+
+/** Read the preferred timer duration from localStorage (safe for SSR). */
+function getLocalTimerDuration(): number {
+    if (typeof window === 'undefined') return DEFAULT_TIMER_SECONDS;
+    return parseInt(localStorage.getItem('caroTimerSeconds') || String(DEFAULT_TIMER_SECONDS), 10);
+}
+
+/** Build initial game state for a new room, owned by the given user. */
+function buildNewRoomState(userId: string): GameState {
+    return {
+        board: createEmptyBoard(BOARD_SIZE),
+        currentPlayer: 'X',
+        winner: '',
+        status: 'waiting',
+        players: { X: userId },
+        playerNames: { X: getLocalPlayerName() },
+        timerDuration: getLocalTimerDuration(),
+    };
+}
+
+// ─── Types ──────────────────────────────────────────────────────────────────────
+
+interface PlayerStatsMap {
+    X: PlayerStats | null;
+    O: PlayerStats | null;
+}
+
+// ─── Hook ───────────────────────────────────────────────────────────────────────
+
+/**
+ * Core multiplayer game-state hook.
+ *
+ * Subscribes to a Firebase game room and exposes:
+ * - Reactive game state (board, players, status, winner)
+ * - Player identity (role, opponent name, stats)
+ * - Action callbacks (makeMove, joinGame, requestPlayAgain, quitGame, handleTimeOut)
+ * - Derived flags (isMyTurn, hasRequestedPlayAgain, lastMove)
+ */
 export function useGameState(roomId: string, userId: string) {
+    // ── State ────────────────────────────────────────────────────────────────
     const [gameState, setGameStateLocal] = useState<GameState>(createDefaultState);
     const [myPlayerRole, setMyPlayerRole] = useState<Player>('');
     const [opponentName, setOpponentName] = useState('');
+    const [playersStats, setPlayersStats] = useState<PlayerStatsMap>({ X: null, O: null });
+
+    // ── Refs (mutable flags that survive re-renders) ─────────────────────────
     const hasInitialized = useRef(false);
     const hasRecordedResult = useRef(false);
 
-    // Get local player name
-    const getLocalName = () => {
-        return typeof window !== 'undefined' ? localStorage.getItem('caroPlayerName') || '' : '';
-    };
+    // ── Effect: subscribe to game room ───────────────────────────────────────
 
     useEffect(() => {
         if (!roomId || !userId) return;
 
-        // Reset on roomId change
+        // Reset everything when the roomId changes
         hasInitialized.current = false;
         hasRecordedResult.current = false;
         setTimeout(() => {
@@ -43,173 +95,94 @@ export function useGameState(roomId: string, userId: string) {
 
         const unsubscribe = subscribeToGame(roomId, (data) => {
             if (data) {
-                if (!data.board) {
-                    data.board = createEmptyBoard(15);
-                }
-                setGameStateLocal(data as GameState);
-
-                // Determine our role
-                if (data.players?.X === userId) {
-                    setMyPlayerRole('X');
-                    // If we are the creator and the game hasn't started yet,
-                    // sync our current timer setting to Firebase so Player O gets it too.
-                    if (data.status === 'waiting') {
-                        const localTimerDuration =
-                            typeof window !== 'undefined'
-                                ? parseInt(localStorage.getItem('caroTimerSeconds') || '30', 10)
-                                : 30;
-                        if (data.timerDuration !== localTimerDuration) {
-                            updateGameState(roomId, { timerDuration: localTimerDuration }).catch(
-                                console.error
-                            );
-                        }
-                    }
-                    // Fetch opponent O's name
-                    if (data.players?.O) {
-                        const oName = data.playerNames?.O || '';
-                        setOpponentName(oName);
-                    }
-                } else if (data.players?.O === userId) {
-                    setMyPlayerRole('O');
-                    // Fetch opponent X's name
-                    const xName = data.playerNames?.X || '';
-                    setOpponentName(xName);
-                } else {
-                    setMyPlayerRole('');
-                }
-                hasInitialized.current = true;
+                handleExistingRoom(data, roomId, userId);
             } else if (!hasInitialized.current) {
-                hasInitialized.current = true;
-                const localName = getLocalName();
-                const localTimerDuration =
-                    typeof window !== 'undefined'
-                        ? parseInt(localStorage.getItem('caroTimerSeconds') || '30', 10)
-                        : 30;
-                const newState: GameState = {
-                    board: createEmptyBoard(15),
-                    currentPlayer: 'X',
-                    winner: '',
-                    status: 'waiting',
-                    players: { X: userId },
-                    playerNames: { X: localName },
-                    timerDuration: localTimerDuration,
-                };
-                setGameState(roomId, newState).catch(console.error);
-                // Also update profile name
-                if (localName) updatePlayerName(userId, localName);
+                createNewRoom(roomId, userId);
             }
         });
 
         return () => unsubscribe();
     }, [roomId, userId]);
 
-    // Record game result when game finishes
+    /**
+     * Process an incoming snapshot for an existing room:
+     * - Ensures the board array is present
+     * - Determines our player role and the opponent's display name
+     * - Syncs the room creator's timer preference while still in the lobby
+     */
+    function handleExistingRoom(data: GameState, currentRoomId: string, currentUserId: string) {
+        if (!data.board) {
+            data.board = createEmptyBoard(BOARD_SIZE);
+        }
+        setGameStateLocal(data);
+
+        const players = data.players;
+        if (!players) {
+            setMyPlayerRole('');
+            hasInitialized.current = true;
+            return;
+        }
+
+        if (players.X === currentUserId) {
+            setMyPlayerRole('X');
+            syncTimerIfWaiting(data, currentRoomId);
+            setOpponentName(data.playerNames?.O || '');
+        } else if (players.O === currentUserId) {
+            setMyPlayerRole('O');
+            setOpponentName(data.playerNames?.X || '');
+        } else {
+            setMyPlayerRole('');
+        }
+
+        hasInitialized.current = true;
+    }
+
+    /**
+     * If the room is still in the lobby ("waiting") and we are the creator,
+     * push our current timer preference to Firebase so Player O inherits it.
+     */
+    function syncTimerIfWaiting(state: GameState, currentRoomId: string) {
+        if (state.status !== 'waiting') return;
+
+        const localDuration = getLocalTimerDuration();
+        if (state.timerDuration !== localDuration) {
+            updateGameState(currentRoomId, { timerDuration: localDuration }).catch(console.error);
+        }
+    }
+
+    /** Create a brand-new room and publish it to Firebase. */
+    function createNewRoom(currentRoomId: string, currentUserId: string) {
+        hasInitialized.current = true;
+        const newState = buildNewRoomState(currentUserId);
+        setGameState(currentRoomId, newState).catch(console.error);
+
+        const localName = getLocalPlayerName();
+        if (localName) updatePlayerName(currentUserId, localName);
+    }
+
+    // ── Effect: record game result on finish ─────────────────────────────────
+
     useEffect(() => {
         if (
-            gameState.status === 'finished' &&
-            gameState.winner &&
-            !hasRecordedResult.current &&
-            gameState.players.X &&
-            gameState.players.O
+            gameState.status !== 'finished' ||
+            !gameState.winner ||
+            hasRecordedResult.current ||
+            !gameState.players.X ||
+            !gameState.players.O
         ) {
-            hasRecordedResult.current = true;
-            const winnerId = gameState.winner === 'X' ? gameState.players.X : gameState.players.O;
-            const loserId = gameState.winner === 'X' ? gameState.players.O : gameState.players.X;
-            if (winnerId && loserId) {
-                recordGameResult(winnerId, loserId);
-            }
+            return;
+        }
+
+        hasRecordedResult.current = true;
+        const winnerId = gameState.winner === 'X' ? gameState.players.X : gameState.players.O;
+        const loserId = gameState.winner === 'X' ? gameState.players.O : gameState.players.X;
+
+        if (winnerId && loserId) {
+            recordGameResult(winnerId, loserId);
         }
     }, [gameState.status, gameState.winner, gameState.players]);
 
-    // Join an existing game as Player O
-    const joinGame = useCallback(async () => {
-        if (myPlayerRole !== '' || gameState.status !== 'waiting') return;
-
-        if (!gameState.players.O && gameState.players.X !== userId) {
-            const localName = getLocalName();
-            const updates: Record<string, string> = {
-                'players/O': userId,
-                status: 'playing',
-                'playerNames/O': localName,
-            };
-            await updateGameState(roomId, updates);
-            if (localName) updatePlayerName(userId, localName);
-        }
-    }, [roomId, userId, gameState, myPlayerRole]);
-
-    const makeMove = useCallback(
-        async (row: number, col: number) => {
-            if (
-                gameState.status !== 'playing' ||
-                gameState.board[row][col] !== '' ||
-                gameState.currentPlayer !== myPlayerRole ||
-                gameState.winner !== ''
-            ) {
-                return;
-            }
-
-            const newBoard = gameState.board.map((r: Player[]) => [...r]);
-            newBoard[row][col] = myPlayerRole;
-
-            const isWin = checkWin(newBoard, row, col, myPlayerRole);
-            const nextPlayer = myPlayerRole === 'X' ? 'O' : 'X';
-
-            const updates = {
-                board: newBoard,
-                currentPlayer: isWin ? gameState.currentPlayer : nextPlayer,
-                winner: isWin ? myPlayerRole : '',
-                status: isWin ? 'finished' : 'playing',
-                lastMove: [row, col],
-            };
-
-            await updateGameState(roomId, updates);
-        },
-        [roomId, gameState, myPlayerRole]
-    );
-
-    const requestPlayAgain = useCallback(async () => {
-        if (myPlayerRole === '') return;
-
-        const opponentRole = myPlayerRole === 'X' ? 'O' : 'X';
-        const opponentVoted = gameState.playAgain?.[opponentRole as 'X' | 'O'] === true;
-
-        if (opponentVoted) {
-            // Both players agreed, actually reset the game.
-            hasRecordedResult.current = false;
-            const updates = {
-                board: createEmptyBoard(15),
-                currentPlayer: 'X', // Starting player
-                winner: '',
-                status: 'playing',
-                lastMove: null,
-                quit: null,
-                playAgain: null,
-            };
-            await updateGameState(roomId, updates);
-        } else {
-            // Only this player has voted so far.
-            const newPlayAgain = { ...gameState.playAgain, [myPlayerRole]: true };
-            await updateGameState(roomId, { playAgain: newPlayAgain });
-        }
-    }, [roomId, myPlayerRole, gameState.playAgain]);
-
-    const quitGame = useCallback(async () => {
-        if (myPlayerRole === '') return;
-        await updateGameState(roomId, { quit: true });
-    }, [roomId, myPlayerRole]);
-
-    const handleTimeOut = useCallback(async () => {
-        // The player whose turn it is ran out of time — opponent wins
-        if (gameState.status !== 'playing') return;
-        const winner = gameState.currentPlayer === 'X' ? 'O' : 'X';
-        await updateGameState(roomId, { status: 'finished', winner });
-    }, [roomId, gameState.status, gameState.currentPlayer]);
-
-    // Fetch stats for both players
-    const [playersStats, setPlayersStats] = useState<{
-        X: PlayerStats | null;
-        O: PlayerStats | null;
-    }>({ X: null, O: null });
+    // ── Effect: subscribe to both players' profile stats ─────────────────────
 
     useEffect(() => {
         if (!gameState.players.X && !gameState.players.O) return;
@@ -229,10 +202,96 @@ export function useGameState(roomId: string, userId: string) {
         }
 
         return () => {
-            if (unsubX) unsubX();
-            if (unsubO) unsubO();
+            unsubX?.();
+            unsubO?.();
         };
     }, [gameState.players.X, gameState.players.O]);
+
+    // ── Callbacks ────────────────────────────────────────────────────────────
+
+    /** Join an existing room as Player O. No-op if already assigned or room isn't waiting. */
+    const joinGame = useCallback(async () => {
+        if (myPlayerRole !== '' || gameState.status !== 'waiting') return;
+        if (gameState.players.O || gameState.players.X === userId) return;
+
+        const localName = getLocalPlayerName();
+        await updateGameState(roomId, {
+            'players/O': userId,
+            status: 'playing',
+            'playerNames/O': localName,
+        });
+        if (localName) updatePlayerName(userId, localName);
+    }, [roomId, userId, gameState, myPlayerRole]);
+
+    /** Place a piece on the board. Validates turn/cell and checks for a win. */
+    const makeMove = useCallback(
+        async (row: number, col: number) => {
+            const isInvalidMove =
+                gameState.status !== 'playing' ||
+                gameState.board[row][col] !== '' ||
+                gameState.currentPlayer !== myPlayerRole ||
+                gameState.winner !== '';
+
+            if (isInvalidMove) return;
+
+            const newBoard = gameState.board.map((r: Player[]) => [...r]);
+            newBoard[row][col] = myPlayerRole;
+
+            const won = checkWin(newBoard, row, col, myPlayerRole);
+            const nextPlayer = myPlayerRole === 'X' ? 'O' : 'X';
+
+            await updateGameState(roomId, {
+                board: newBoard,
+                currentPlayer: won ? gameState.currentPlayer : nextPlayer,
+                winner: won ? myPlayerRole : '',
+                status: won ? 'finished' : 'playing',
+                lastMove: [row, col],
+            });
+        },
+        [roomId, gameState, myPlayerRole]
+    );
+
+    /** Vote to play again. If both players voted, reset the board automatically. */
+    const requestPlayAgain = useCallback(async () => {
+        if (myPlayerRole === '') return;
+
+        const opponentRole = myPlayerRole === 'X' ? 'O' : 'X';
+        const opponentAgreed = gameState.playAgain?.[opponentRole as 'X' | 'O'] === true;
+
+        if (opponentAgreed) {
+            // Both agreed — reset the board
+            hasRecordedResult.current = false;
+            await updateGameState(roomId, {
+                board: createEmptyBoard(BOARD_SIZE),
+                currentPlayer: 'X',
+                winner: '',
+                status: 'playing',
+                lastMove: null,
+                quit: null,
+                playAgain: null,
+            });
+        } else {
+            // Only this player voted so far
+            await updateGameState(roomId, {
+                playAgain: { ...gameState.playAgain, [myPlayerRole]: true },
+            });
+        }
+    }, [roomId, myPlayerRole, gameState.playAgain]);
+
+    /** Signal both players to quit — triggers a redirect in Board.tsx. */
+    const quitGame = useCallback(async () => {
+        if (myPlayerRole === '') return;
+        await updateGameState(roomId, { quit: true });
+    }, [roomId, myPlayerRole]);
+
+    /** Called when the move timer expires — the opponent of the current player wins. */
+    const handleTimeOut = useCallback(async () => {
+        if (gameState.status !== 'playing') return;
+        const winner = gameState.currentPlayer === 'X' ? 'O' : 'X';
+        await updateGameState(roomId, { status: 'finished', winner });
+    }, [roomId, gameState.status, gameState.currentPlayer]);
+
+    // ── Public API ───────────────────────────────────────────────────────────
 
     return {
         gameState,

@@ -88,7 +88,7 @@ export default function GameOverOverlay({
                         marginBottom: '1rem',
                     }}
                 >
-                    Returning to home in {timeLeft}s...
+                    {t('returningHome', { seconds: String(timeLeft) })}
                 </p>
                 <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center' }}>
                     <button
@@ -96,7 +96,7 @@ export default function GameOverOverlay({
                         onClick={onPlayAgain}
                         disabled={hasWaiting}
                     >
-                        {hasWaiting ? 'Waiting for opponent...' : t('playAgain')}
+                        {hasWaiting ? t('waitingForOpponent') : t('playAgain')}
                     </button>
                     {onQuit && (
                         <button

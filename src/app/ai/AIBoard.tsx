@@ -3,84 +3,82 @@ import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { useAIGameState } from '../../hooks/useAIGameState';
 import { IconX, IconO } from '../../components/Icons';
 import GameOverOverlay from '../../components/GameOverOverlay';
+import PlayerTag from '../../components/PlayerTag';
+import InlineNameEditor from '../../components/InlineNameEditor';
 import { useLanguage } from '../../context/LanguageContext';
 import { Player } from '../../lib/gameLogic';
 import { playMoveSound, playVictorySound, playDefeatSound } from '../../lib/sounds';
-import { updatePlayerName, recordAIGameResult } from '../../lib/playerStats';
+import { recordAIGameResult } from '../../lib/playerStats';
 
+/**
+ * AI game board — single-player mode against the built-in Caro AI.
+ */
 export default function AIBoard() {
     const { gameState, playerStats, makeMove, resetGame } = useAIGameState();
     const { t } = useLanguage();
-    const [playerName, setPlayerName] = useState('');
-    const [editingName, setEditingName] = useState(false);
-    const [nameInput, setNameInput] = useState('');
     const prevBoardRef = useRef<string>('');
     const prevWinnerRef = useRef<string>('');
     const hasRecordedResult = useRef(false);
+    const [playerName, setPlayerName] = useState('');
+    const [userId, setUserId] = useState('');
 
-    // Load player name
+    /** Load localStorage values on mount (client-only, safe for SSR). */
     useEffect(() => {
         setPlayerName(localStorage.getItem('caroPlayerName') || '');
+        setUserId(localStorage.getItem('caroUserId') || '');
     }, []);
 
-    // Sound on move
+    // ── Effects ──────────────────────────────────────────────────────────────
+
+    /** Play a click sound whenever a new piece appears on the board. */
     useEffect(() => {
-        const boardStr = JSON.stringify(gameState.board);
-        if (prevBoardRef.current && prevBoardRef.current !== boardStr) {
+        const boardSnapshot = JSON.stringify(gameState.board);
+        if (prevBoardRef.current && prevBoardRef.current !== boardSnapshot) {
             playMoveSound();
         }
-        prevBoardRef.current = boardStr;
+        prevBoardRef.current = boardSnapshot;
     }, [gameState.board]);
 
-    // Sound on win/lose + record stats
+    /** Play victory/defeat fanfare and record the game result. */
     useEffect(() => {
-        if (gameState.winner && gameState.winner !== prevWinnerRef.current) {
-            if (gameState.winner === 'X') {
-                playVictorySound();
-            } else {
-                playDefeatSound();
-            }
+        if (!gameState.winner || gameState.winner === prevWinnerRef.current) return;
 
-            // Record AI game result
-            if (!hasRecordedResult.current) {
-                hasRecordedResult.current = true;
-                const userId = localStorage.getItem('caroUserId');
-                if (userId) {
-                    recordAIGameResult(userId, gameState.winner === 'X');
-                }
-            }
+        if (gameState.winner === 'X') {
+            playVictorySound();
+        } else {
+            playDefeatSound();
         }
+
+        if (!hasRecordedResult.current) {
+            hasRecordedResult.current = true;
+            const userId = localStorage.getItem('caroUserId');
+            if (userId) recordAIGameResult(userId, gameState.winner === 'X');
+        }
+
         prevWinnerRef.current = gameState.winner;
     }, [gameState.winner]);
 
-    const saveName = useCallback(() => {
-        const trimmed = nameInput.trim();
-        setPlayerName(trimmed);
-        localStorage.setItem('caroPlayerName', trimmed);
-        setEditingName(false);
-        // Sync to Firebase
-        const userId = localStorage.getItem('caroUserId');
-        if (userId) updatePlayerName(userId, trimmed);
-    }, [nameInput]);
+    // ── Handlers ─────────────────────────────────────────────────────────────
 
     const handleReset = useCallback(() => {
         hasRecordedResult.current = false;
         resetGame();
     }, [resetGame]);
 
-    const handleCellClick = (row: number, col: number) => {
-        makeMove(row, col);
-    };
+    // ── Derived values ───────────────────────────────────────────────────────
 
-    const getStatusMessage = () => {
+    const statusMessage = (() => {
         if (gameState.winner === 'X') return t('youWon');
         if (gameState.winner === 'O') return t('youLost');
         if (gameState.aiThinking) return t('aiThinking');
         return t('yourTurn');
-    };
+    })();
+
+    // ── Render ────────────────────────────────────────────────────────────────
 
     return (
         <div className="board-container">
+            {/* ── Dashboard ──────────────────────────────────────────── */}
             <div className="dashboard glass">
                 <div
                     className="status-badge"
@@ -92,70 +90,32 @@ export default function AIBoard() {
                     }}
                 >
                     <div className="players-row">
-                        {' '}
-                        <div className="player-tag">
-                            <span className="icon-x" style={{ fontWeight: 'bold' }}>
-                                X
-                            </span>
-                            {playerStats && playerStats.avatar && (
-                                <span className="lb-avatar">{playerStats.avatar}</span>
-                            )}
-                            <span>{playerName || t('you')}</span>
-                            {playerStats && playerStats.gamesPlayed > 0 && (
-                                <span className="lb-stats" style={{ marginLeft: '0.2rem' }}>
-                                    (
-                                    {Math.round((playerStats.wins / playerStats.gamesPlayed) * 100)}
-                                    %)
-                                </span>
-                            )}
-                            {!editingName && (
-                                <button
-                                    className="name-edit-btn"
-                                    onClick={() => {
-                                        setNameInput(playerName);
-                                        setEditingName(true);
-                                    }}
-                                    title={t('editName')}
-                                >
-                                    ✏️
-                                </button>
-                            )}
-                        </div>
+                        <PlayerTag
+                            role="X"
+                            displayName={playerName || t('you')}
+                            stats={playerStats}
+                        />
+                        <InlineNameEditor
+                            userId={userId}
+                            onNameSaved={(newName) => setPlayerName(newName)}
+                        />
+
                         <span className="vs-text">VS</span>
-                        <div className="player-tag">
-                            <span className="icon-o" style={{ fontWeight: 'bold' }}>
-                                O
-                            </span>
-                            <span className="lb-avatar">🤖</span>
-                            <span>AI</span>
-                            <span className="lb-stats" style={{ marginLeft: '0.2rem' }}>
-                                (99%)
-                            </span>
-                        </div>
+
+                        <PlayerTag
+                            role="O"
+                            displayName="AI"
+                            stats={{
+                                name: 'AI',
+                                avatar: '🤖',
+                                wins: 99,
+                                losses: 1,
+                                gamesPlayed: 100,
+                            }}
+                        />
                     </div>
-                    {editingName && (
-                        <div style={{ display: 'flex', gap: '0.3rem' }}>
-                            <input
-                                className="name-input"
-                                type="text"
-                                value={nameInput}
-                                onChange={(e) => setNameInput(e.target.value)}
-                                placeholder={t('enterName')}
-                                maxLength={20}
-                                autoFocus
-                                onKeyDown={(e) => e.key === 'Enter' && saveName()}
-                            />
-                            <button
-                                className="btn-primary"
-                                style={{ padding: '0.3rem 0.6rem', fontSize: '0.75rem' }}
-                                onClick={saveName}
-                            >
-                                ✓
-                            </button>
-                        </div>
-                    )}
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                        {getStatusMessage()}
+                        {statusMessage}
                         {gameState.aiThinking && <span className="ai-thinking-dot" />}
                     </div>
                 </div>
@@ -165,6 +125,7 @@ export default function AIBoard() {
                 </button>
             </div>
 
+            {/* ── Board Grid ─────────────────────────────────────────── */}
             <div
                 className="board glass"
                 style={{
@@ -183,7 +144,7 @@ export default function AIBoard() {
                             <div
                                 key={`${rowIndex}-${colIndex}`}
                                 className={`cell ${isLastMove ? 'cell-last-move' : ''}`}
-                                onClick={() => handleCellClick(rowIndex, colIndex)}
+                                onClick={() => makeMove(rowIndex, colIndex)}
                             >
                                 {cell === 'X' && <IconX className="cell-icon icon-x" />}
                                 {cell === 'O' && <IconO className="cell-icon icon-o" />}
@@ -192,6 +153,8 @@ export default function AIBoard() {
                     })
                 )}
             </div>
+
+            {/* ── Game Over Overlay ──────────────────────────────────── */}
             {gameState.status === 'finished' && (
                 <GameOverOverlay
                     isWinner={gameState.winner === 'X'}

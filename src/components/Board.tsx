@@ -1,17 +1,22 @@
 'use client';
-import React, { useEffect, useState, useRef, useCallback } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { useGameState } from '../hooks/useGameState';
 import { IconX, IconO } from './Icons';
 import GameOverOverlay from './GameOverOverlay';
+import PlayerTag from './PlayerTag';
+import InlineNameEditor from './InlineNameEditor';
 import { useLanguage } from '../context/LanguageContext';
 import { Player } from '../lib/gameLogic';
 import { playMoveSound, playVictorySound, playDefeatSound } from '../lib/sounds';
-import { updatePlayerName } from '../lib/playerStats';
 import { usePlayerSettings } from '../hooks/usePlayerSettings';
 
-const MOVE_TIMER_SECONDS = 30; // fallback default
+/** Fallback if the room was created before `timerDuration` existed in the schema. */
+const DEFAULT_TIMER_SECONDS = 30;
 
+/**
+ * Main multiplayer game board — renders the grid, dashboard, timer, and game-over overlay.
+ */
 export default function Board({ roomId, userId }: { roomId: string; userId: string }) {
     const router = useRouter();
     const {
@@ -30,43 +35,43 @@ export default function Board({ roomId, userId }: { roomId: string; userId: stri
     } = useGameState(roomId, userId);
     const { t } = useLanguage();
     const { soundEnabled } = usePlayerSettings();
-    // Read timer duration from Firebase game state so both players are always in sync.
-    // Fall back to 30s for rooms created before this field was added.
-    const timerDuration = gameState.timerDuration ?? MOVE_TIMER_SECONDS;
+
     const [playerName, setPlayerName] = useState('');
-    const [editingName, setEditingName] = useState(false);
-    const [nameInput, setNameInput] = useState('');
-    const [timeLeft, setTimeLeft] = useState(MOVE_TIMER_SECONDS);
+    const [timeLeft, setTimeLeft] = useState(DEFAULT_TIMER_SECONDS);
     const prevBoardRef = useRef<string>('');
     const prevWinnerRef = useRef<string>('');
 
-    // Handle game level quit
+    // Timer duration synced via Firebase so both players use the same value.
+    const timerDuration = gameState.timerDuration ?? DEFAULT_TIMER_SECONDS;
+    const opponentRole = myPlayerRole === 'X' ? 'O' : 'X';
+
+    // ── Effects ──────────────────────────────────────────────────────────────
+
+    /** Redirect both players to the homepage when the game is quit. */
     useEffect(() => {
-        if (gameState.quit) {
-            router.push('/');
-        }
+        if (gameState.quit) router.push('/');
     }, [gameState.quit, router]);
 
-    // Load player name
+    /** Load persisted player name on mount. */
     useEffect(() => {
         setPlayerName(localStorage.getItem('caroPlayerName') || '');
     }, []);
 
-    // Sound on move — respect user sound setting
+    /** Play a click sound whenever a new piece appears on the board. */
     useEffect(() => {
-        const boardStr = JSON.stringify(gameState.board);
+        const boardSnapshot = JSON.stringify(gameState.board);
         if (
             prevBoardRef.current &&
-            prevBoardRef.current !== boardStr &&
+            prevBoardRef.current !== boardSnapshot &&
             gameState.status !== 'loading' &&
             soundEnabled
         ) {
             playMoveSound();
         }
-        prevBoardRef.current = boardStr;
+        prevBoardRef.current = boardSnapshot;
     }, [gameState.board, gameState.status, soundEnabled]);
 
-    // Sound on win/lose
+    /** Play victory or defeat fanfare when a winner is declared. */
     useEffect(() => {
         if (gameState.winner && gameState.winner !== prevWinnerRef.current) {
             if (gameState.winner === myPlayerRole) {
@@ -78,41 +83,49 @@ export default function Board({ roomId, userId }: { roomId: string; userId: stri
         prevWinnerRef.current = gameState.winner;
     }, [gameState.winner, myPlayerRole]);
 
-    // Move timer — reads duration from Firebase so both players count down the same value
+    /** Countdown timer — resets on each turn change, reads duration from Firebase. */
     useEffect(() => {
         if (gameState.status !== 'playing') {
             setTimeLeft(timerDuration);
             return;
         }
         setTimeLeft(timerDuration);
-        const interval = setInterval(() => {
-            setTimeLeft((prev) => prev - 1);
-        }, 1000);
+        const interval = setInterval(() => setTimeLeft((prev) => prev - 1), 1000);
         return () => clearInterval(interval);
     }, [gameState.status, gameState.currentPlayer, timerDuration]);
 
-    // Auto-trigger timeout win when timer hits 0
+    /** Trigger auto-win for the opponent when the timer reaches zero. */
     useEffect(() => {
         if (timeLeft <= 0 && gameState.status === 'playing') {
             handleTimeOut();
         }
     }, [timeLeft, gameState.status, handleTimeOut]);
 
-    // Auto-join
+    /** Automatically join the room as Player O when arriving at a waiting room. */
     useEffect(() => {
-        if (gameState && gameState.status === 'waiting' && myPlayerRole === '') {
+        if (gameState?.status === 'waiting' && myPlayerRole === '') {
             joinGame();
         }
     }, [gameState, myPlayerRole, joinGame]);
 
-    const saveName = useCallback(() => {
-        const trimmed = nameInput.trim();
-        setPlayerName(trimmed);
-        localStorage.setItem('caroPlayerName', trimmed);
-        setEditingName(false);
-        // Sync to Firebase profile
-        updatePlayerName(userId, trimmed);
-    }, [nameInput, userId]);
+    // ── Derived values ───────────────────────────────────────────────────────
+
+    const statusMessage = (() => {
+        if (gameState.status === 'waiting') return `${t('waitingForO')} (${roomId})...`;
+        if (gameState.winner) return gameState.winner === myPlayerRole ? t('youWon') : t('youLost');
+        return isMyTurn ? t('yourTurn') : t('opponentTurn');
+    })();
+
+    const isTimerDanger = timeLeft <= 10;
+
+    // ── Handlers ─────────────────────────────────────────────────────────────
+
+    const copyInviteLink = () => {
+        navigator.clipboard.writeText(`${window.location.origin}/play/${roomId}`);
+        alert(t('inviteCopied'));
+    };
+
+    // ── Render ────────────────────────────────────────────────────────────────
 
     if (!gameState || gameState.status === 'loading') {
         return (
@@ -122,32 +135,9 @@ export default function Board({ roomId, userId }: { roomId: string; userId: stri
         );
     }
 
-    const handleCellClick = (row: number, col: number) => {
-        makeMove(row, col);
-    };
-
-    const getStatusMessage = () => {
-        if (gameState.status === 'waiting') {
-            return `${t('waitingForO')} (${roomId})...`;
-        }
-        if (gameState.winner) {
-            if (gameState.winner === myPlayerRole) return t('youWon');
-            return t('youLost');
-        }
-        return isMyTurn ? t('yourTurn') : t('opponentTurn');
-    };
-
-    const copyInviteLink = () => {
-        const url = `${window.location.origin}/play/${roomId}`;
-        navigator.clipboard.writeText(url);
-        alert(t('inviteCopied'));
-    };
-
-    const timerDanger = timeLeft <= 10;
-    const opponentRole = myPlayerRole === 'X' ? 'O' : 'X';
-
     return (
         <div className="board-container">
+            {/* ── Dashboard ──────────────────────────────────────────── */}
             <div className="dashboard glass">
                 <div
                     className="status-badge"
@@ -159,116 +149,30 @@ export default function Board({ roomId, userId }: { roomId: string; userId: stri
                     }}
                 >
                     <div className="players-row">
-                        <div className="player-tag">
-                            <span
-                                className={myPlayerRole === 'X' ? 'icon-x' : 'icon-o'}
-                                style={{ fontWeight: 'bold' }}
-                            >
-                                {myPlayerRole || '?'}
-                            </span>
-                            {playersStats &&
-                                myPlayerRole &&
-                                playersStats[myPlayerRole as 'X' | 'O']?.avatar && (
-                                    <span className="lb-avatar">
-                                        {playersStats[myPlayerRole as 'X' | 'O']?.avatar}
-                                    </span>
-                                )}
-                            <span>{playerName || t('you')}</span>
-                            {playersStats &&
-                                myPlayerRole &&
-                                (playersStats[myPlayerRole as 'X' | 'O']?.gamesPlayed ?? 0) > 0 && (
-                                    <span className="lb-stats" style={{ marginLeft: '0.2rem' }}>
-                                        (
-                                        {Math.round(
-                                            ((playersStats[myPlayerRole as 'X' | 'O']?.wins ?? 0) /
-                                                (playersStats[myPlayerRole as 'X' | 'O']
-                                                    ?.gamesPlayed ?? 1)) *
-                                                100
-                                        )}
-                                        %)
-                                    </span>
-                                )}
-                            {!editingName && (
-                                <button
-                                    className="name-edit-btn"
-                                    onClick={() => {
-                                        setNameInput(playerName);
-                                        setEditingName(true);
-                                    }}
-                                    title={t('editName')}
-                                >
-                                    ✏️
-                                </button>
-                            )}
-                        </div>
+                        <PlayerTag
+                            role={myPlayerRole || '?'}
+                            displayName={playerName || t('you')}
+                            stats={myPlayerRole ? playersStats[myPlayerRole as 'X' | 'O'] : null}
+                        />
+                        <InlineNameEditor userId={userId} onNameSaved={setPlayerName} />
+
                         {gameState.status !== 'waiting' && opponentRole && (
                             <>
                                 <span className="vs-text">VS</span>
-                                <div className="player-tag">
-                                    <span
-                                        className={opponentRole === 'X' ? 'icon-x' : 'icon-o'}
-                                        style={{ fontWeight: 'bold' }}
-                                    >
-                                        {opponentRole}
-                                    </span>
-                                    {playersStats &&
-                                        opponentRole &&
-                                        playersStats[opponentRole as 'X' | 'O']?.avatar && (
-                                            <span className="lb-avatar">
-                                                {playersStats[opponentRole as 'X' | 'O']?.avatar}
-                                            </span>
-                                        )}
-                                    <span>{opponentName || t('opponent')}</span>
-                                    {playersStats &&
-                                        opponentRole &&
-                                        (playersStats[opponentRole as 'X' | 'O']?.gamesPlayed ??
-                                            0) > 0 && (
-                                            <span
-                                                className="lb-stats"
-                                                style={{ marginLeft: '0.2rem' }}
-                                            >
-                                                (
-                                                {Math.round(
-                                                    ((playersStats[opponentRole as 'X' | 'O']
-                                                        ?.wins ?? 0) /
-                                                        (playersStats[opponentRole as 'X' | 'O']
-                                                            ?.gamesPlayed ?? 1)) *
-                                                        100
-                                                )}
-                                                %)
-                                            </span>
-                                        )}
-                                </div>
+                                <PlayerTag
+                                    role={opponentRole}
+                                    displayName={opponentName || t('opponent')}
+                                    stats={playersStats[opponentRole as 'X' | 'O']}
+                                />
                             </>
                         )}
                     </div>
-                    {editingName && (
-                        <div style={{ display: 'flex', gap: '0.3rem' }}>
-                            <input
-                                className="name-input"
-                                type="text"
-                                value={nameInput}
-                                onChange={(e) => setNameInput(e.target.value)}
-                                placeholder={t('enterName')}
-                                maxLength={20}
-                                autoFocus
-                                onKeyDown={(e) => e.key === 'Enter' && saveName()}
-                            />
-                            <button
-                                className="btn-primary"
-                                style={{ padding: '0.3rem 0.6rem', fontSize: '0.75rem' }}
-                                onClick={saveName}
-                            >
-                                ✓
-                            </button>
-                        </div>
-                    )}
-                    <div>{getStatusMessage()}</div>
+                    <div>{statusMessage}</div>
                 </div>
 
                 <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
                     {gameState.status === 'playing' && (
-                        <div className={`timer ${timerDanger ? 'timer-danger' : ''}`}>
+                        <div className={`timer ${isTimerDanger ? 'timer-danger' : ''}`}>
                             ⏱ {timeLeft}s
                         </div>
                     )}
@@ -280,6 +184,7 @@ export default function Board({ roomId, userId }: { roomId: string; userId: stri
                 </div>
             </div>
 
+            {/* ── Board Grid ─────────────────────────────────────────── */}
             <div
                 className="board glass"
                 style={{
@@ -296,7 +201,7 @@ export default function Board({ roomId, userId }: { roomId: string; userId: stri
                             <div
                                 key={`${rowIndex}-${colIndex}`}
                                 className={`cell ${isLastMove ? 'cell-last-move' : ''}`}
-                                onClick={() => handleCellClick(rowIndex, colIndex)}
+                                onClick={() => makeMove(rowIndex, colIndex)}
                             >
                                 {cell === 'X' && <IconX className="cell-icon icon-x" />}
                                 {cell === 'O' && <IconO className="cell-icon icon-o" />}
@@ -305,6 +210,8 @@ export default function Board({ roomId, userId }: { roomId: string; userId: stri
                     })
                 )}
             </div>
+
+            {/* ── Game Over Overlay ──────────────────────────────────── */}
             {gameState.status === 'finished' && myPlayerRole && (
                 <GameOverOverlay
                     isWinner={gameState.winner === myPlayerRole}

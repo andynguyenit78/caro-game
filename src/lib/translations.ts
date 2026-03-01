@@ -30,6 +30,8 @@ export const translations = {
         congratsWin: 'Congratulations! Player {player} wins!',
         betterLuck: 'Better luck next time!',
         playAgain: 'Play Again',
+        returningHome: 'Returning to home in {seconds}s...',
+        waitingForOpponent: 'Waiting for opponent...',
 
         // Settings
         language: 'Language',
@@ -105,6 +107,8 @@ export const translations = {
         congratsWin: 'Chúc mừng! Người chơi {player} thắng!',
         betterLuck: 'Chúc may mắn lần sau!',
         playAgain: 'Chơi Lại',
+        returningHome: 'Trở về trang chủ sau {seconds} giây...',
+        waitingForOpponent: 'Đang chờ đối thủ...',
 
         // Settings
         language: 'Ngôn ngữ',
