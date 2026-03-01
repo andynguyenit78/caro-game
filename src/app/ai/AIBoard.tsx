@@ -107,20 +107,22 @@ export default function AIBoard() {
     })();
 
     const renderWinningLine = () => {
-        const line = gameState.winningLine;
-        if (!line || line.length < 5) return null;
+        const line = gameState.winningLine || gameState.warningLine;
+        const isWarning = !gameState.winningLine && !!gameState.warningLine;
+        if (!line || line.length < 4) return null;
 
         const start = line[0];
         const end = line[line.length - 1];
         const offset = 100 / 15;
 
-        const startX = `calc(${start[1] + 0.5} * ${offset}%)`;
-        const startY = `calc(${start[0] + 0.5} * ${offset}%)`;
-        const endX = `calc(${end[1] + 0.5} * ${offset}%)`;
-        const endY = `calc(${end[0] + 0.5} * ${offset}%)`;
+        const startX = `${(start[1] + 0.5) * offset}%`;
+        const startY = `${(start[0] + 0.5) * offset}%`;
+        const endX = `${(end[1] + 0.5) * offset}%`;
+        const endY = `${(end[0] + 0.5) * offset}%`;
 
+        const playerAtStart = gameState.board[start[0]][start[1]];
         const strokeColor =
-            gameState.winner === 'X' ? 'var(--player-x-color)' : 'var(--player-o-color)';
+            playerAtStart === 'X' ? 'var(--player-x-color)' : 'var(--player-o-color)';
 
         return (
             <svg
@@ -139,7 +141,7 @@ export default function AIBoard() {
                     x2={endX}
                     y2={endY}
                     pathLength="100"
-                    className="winning-slash"
+                    className={isWarning ? 'warning-slash' : 'winning-slash'}
                     stroke={strokeColor}
                 />
             </svg>

@@ -92,6 +92,29 @@ export function checkWin(
 }
 
 /**
+ * Determine whether placing `player` at (`row`, `col`) creates a threatening line
+ * of exactly 4 consecutive pieces in any direction.
+ * Returns the warning line of coordinates, or null if no threat.
+ */
+export function checkWarning(
+    board: BoardState,
+    row: number,
+    col: number,
+    player: Player
+): [number, number][] | null {
+    if (player === '') return null;
+
+    for (const [rowDelta, colDelta] of WIN_DIRECTIONS) {
+        const line = getConsecutiveLine(board, row, col, rowDelta, colDelta, player);
+        if (line.length === 4) {
+            return line;
+        }
+    }
+
+    return null;
+}
+
+/**
  * Create a fresh empty board of the given size (default 15×15).
  */
 export function createEmptyBoard(size: number = 15): BoardState {

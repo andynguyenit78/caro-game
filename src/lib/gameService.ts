@@ -24,6 +24,7 @@ export interface GameState {
         O?: boolean;
     };
     winningLine?: [number, number][] | null;
+    warningLine?: [number, number][] | null;
     latestEmote?: {
         emoji: string;
         sender: Player;

@@ -1,6 +1,6 @@
 'use client';
 import { useState, useCallback, useEffect } from 'react';
-import { BoardState, Player, createEmptyBoard, checkWin } from '../lib/gameLogic';
+import { BoardState, Player, createEmptyBoard, checkWin, checkWarning } from '../lib/gameLogic';
 import { findBestMove } from '../lib/caroAI';
 import { subscribeToStats, PlayerStats } from '../lib/playerStats';
 
@@ -14,6 +14,7 @@ interface AIGameState {
     lastMove: [number, number] | null;
     aiThinking: boolean;
     winningLine?: [number, number][] | null;
+    warningLine?: [number, number][] | null;
     latestEmote?: {
         emoji: string;
         sender: Player;
@@ -30,6 +31,7 @@ export function useAIGameState() {
         lastMove: null,
         aiThinking: false,
         winningLine: null,
+        warningLine: null,
         latestEmote: null,
     });
 
@@ -54,8 +56,11 @@ export function useAIGameState() {
                     lastMove: [row, col] as [number, number],
                     aiThinking: false,
                     winningLine,
+                    warningLine: null,
                 };
             }
+
+            const warningLine = checkWarning(newBoard, row, col, 'X');
 
             // Set AI thinking state
             return {
@@ -64,6 +69,7 @@ export function useAIGameState() {
                 currentTurn: 'O' as Player,
                 lastMove: [row, col] as [number, number],
                 aiThinking: true,
+                warningLine,
             };
         });
 
@@ -87,9 +93,12 @@ export function useAIGameState() {
                         lastMove: [aiRow, aiCol] as [number, number],
                         aiThinking: false,
                         winningLine: aiWinningLine,
+                        warningLine: null,
                         latestEmote: { emoji: '🤣', sender: 'O', timestamp: Date.now() },
                     };
                 }
+
+                const aiWarningLine = checkWarning(newBoard, aiRow, aiCol, 'O');
 
                 return {
                     ...prev,
@@ -97,6 +106,7 @@ export function useAIGameState() {
                     currentTurn: 'X' as Player,
                     lastMove: [aiRow, aiCol] as [number, number],
                     aiThinking: false,
+                    warningLine: aiWarningLine,
                 };
             });
         }, 400);
@@ -111,6 +121,7 @@ export function useAIGameState() {
             lastMove: null,
             aiThinking: false,
             winningLine: null,
+            warningLine: null,
             latestEmote: null,
         });
     }, []);
