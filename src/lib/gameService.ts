@@ -17,6 +17,7 @@ export interface GameState {
         O?: string;
     };
     lastMove?: [number, number] | null;
+    quit?: boolean;
 }
 
 /**

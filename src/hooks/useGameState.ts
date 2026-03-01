@@ -159,9 +159,15 @@ export function useGameState(roomId: string, userId: string) {
             winner: '',
             status: 'playing',
             lastMove: null,
+            quit: null,
         };
 
         await updateGameState(roomId, updates);
+    }, [roomId, myPlayerRole]);
+
+    const quitGame = useCallback(async () => {
+        if (myPlayerRole === '') return;
+        await updateGameState(roomId, { quit: true });
     }, [roomId, myPlayerRole]);
 
     // Fetch stats for both players
@@ -201,6 +207,7 @@ export function useGameState(roomId: string, userId: string) {
         makeMove,
         joinGame,
         resetGame,
+        quitGame,
         isMyTurn: gameState.currentPlayer === myPlayerRole,
         lastMove: gameState.lastMove || null,
     };

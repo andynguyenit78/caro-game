@@ -5,6 +5,7 @@ import { useLanguage } from '../context/LanguageContext';
 interface GameOverOverlayProps {
     isWinner: boolean;
     onPlayAgain: () => void;
+    onQuit?: () => void;
     playerRole: string;
 }
 
@@ -34,6 +35,7 @@ function ConfettiParticle({ index }: { index: number }) {
 export default function GameOverOverlay({
     isWinner,
     onPlayAgain,
+    onQuit,
     playerRole,
 }: GameOverOverlayProps) {
     const [visible, setVisible] = useState(false);
@@ -62,9 +64,20 @@ export default function GameOverOverlay({
                 <p className="game-over-subtitle">
                     {isWinner ? t('congratsWin', { player: playerRole }) : t('betterLuck')}
                 </p>
-                <button className="btn-primary game-over-btn" onClick={onPlayAgain}>
-                    {t('playAgain')}
-                </button>
+                <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center' }}>
+                    <button className="btn-primary game-over-btn" onClick={onPlayAgain}>
+                        {t('playAgain')}
+                    </button>
+                    {onQuit && (
+                        <button
+                            className="btn-secondary game-over-btn"
+                            style={{ background: 'var(--surface-color)' }}
+                            onClick={onQuit}
+                        >
+                            {t('backHome') || 'Quit'}
+                        </button>
+                    )}
+                </div>
             </div>
         </div>
     );

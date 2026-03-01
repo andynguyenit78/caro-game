@@ -1,5 +1,6 @@
 'use client';
 import React, { useEffect, useState, useRef, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
 import { useGameState } from '../hooks/useGameState';
 import { IconX, IconO } from './Icons';
 import GameOverOverlay from './GameOverOverlay';
@@ -11,6 +12,7 @@ import { updatePlayerName } from '../lib/playerStats';
 const MOVE_TIMER_SECONDS = 30;
 
 export default function Board({ roomId, userId }: { roomId: string; userId: string }) {
+    const router = useRouter();
     const {
         gameState,
         myPlayerRole,
@@ -19,6 +21,7 @@ export default function Board({ roomId, userId }: { roomId: string; userId: stri
         makeMove,
         joinGame,
         resetGame,
+        quitGame,
         isMyTurn,
         lastMove,
     } = useGameState(roomId, userId);
@@ -29,6 +32,13 @@ export default function Board({ roomId, userId }: { roomId: string; userId: stri
     const [timeLeft, setTimeLeft] = useState(MOVE_TIMER_SECONDS);
     const prevBoardRef = useRef<string>('');
     const prevWinnerRef = useRef<string>('');
+
+    // Handle game level quit
+    useEffect(() => {
+        if (gameState.quit) {
+            router.push('/');
+        }
+    }, [gameState.quit, router]);
 
     // Load player name
     useEffect(() => {
@@ -287,6 +297,7 @@ export default function Board({ roomId, userId }: { roomId: string; userId: stri
                 <GameOverOverlay
                     isWinner={gameState.winner === myPlayerRole}
                     onPlayAgain={resetGame}
+                    onQuit={quitGame}
                     playerRole={gameState.winner || ''}
                 />
             )}
