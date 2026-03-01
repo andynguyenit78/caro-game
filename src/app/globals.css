@@ -61,9 +61,11 @@ body {
     0% {
         opacity: 0;
     }
+
     25% {
         opacity: 0.35;
     }
+
     100% {
         opacity: 0;
     }
@@ -729,11 +731,27 @@ button {
 }
 
 /* ===== Mobile Responsive ===== */
+
+/* ── Tablets & small laptops (≤ 768px) ──────────────────────────────────────── */
 @media (max-width: 768px) {
     :root {
         --cell-size: clamp(22px, 5.5vw, 32px);
     }
 
+    /* Header: shrink padding, hide title text */
+    .app-header {
+        padding: 0.6rem 0.8rem;
+    }
+
+    .app-title-group {
+        display: none;
+    }
+
+    .app-logo {
+        font-size: 1.6rem;
+    }
+
+    /* Dashboard: allow wrapping */
     .board-container {
         padding: 0.75rem;
         gap: 0.75rem;
@@ -745,6 +763,12 @@ button {
         gap: 0.5rem;
     }
 
+    .status-badge {
+        font-size: 0.8rem;
+        padding: 0.3rem 0.5rem;
+    }
+
+    /* Board: touch-scrollable, fit screen */
     .board {
         overflow: auto;
         -webkit-overflow-scrolling: touch;
@@ -752,9 +776,8 @@ button {
         border-radius: 10px;
     }
 
+    /* Settings toolbar pills */
     .settings-toolbar {
-        top: 0.5rem;
-        right: 0.5rem;
         gap: 0.3rem;
     }
 
@@ -763,6 +786,7 @@ button {
         font-size: 0.65rem;
     }
 
+    /* Mode buttons on home */
     .mode-buttons {
         grid-template-columns: 1fr 1fr;
         gap: 0.6rem;
@@ -780,6 +804,7 @@ button {
         font-size: 0.75rem;
     }
 
+    /* General glass card sizing */
     main > .glass {
         padding: 1.5rem !important;
         margin: 0.5rem;
@@ -789,15 +814,53 @@ button {
     h1 {
         font-size: 1.5rem !important;
     }
+
+    /* Game Over: fit narrow screens */
+    .game-over-card {
+        padding: 2rem 1.5rem;
+        min-width: 0;
+        width: calc(100vw - 2rem);
+        max-width: 380px;
+    }
+
+    .game-over-emoji {
+        font-size: 3rem;
+    }
+
+    .game-over-title {
+        font-size: 1.6rem;
+    }
+
+    .game-over-btn {
+        padding: 0.6rem 1.5rem !important;
+        font-size: 0.95rem !important;
+    }
+
+    /* Profile */
+    .profile-card {
+        padding: 1.5rem;
+        margin: 0.5rem;
+    }
+
+    .avatar-grid {
+        grid-template-columns: repeat(6, 1fr);
+    }
+
+    .avatar-option {
+        font-size: 1.1rem;
+        width: 32px;
+        height: 32px;
+    }
 }
 
-/* ===== Homepage Two-Card Layout ===== */
+/* ── Homepage two-card layout ───────────────────────────────────────────────── */
 .home-container {
     display: flex;
     gap: 2rem;
     align-items: flex-start;
 }
 
+/* ── Homepage two-card layout stacking ──────────────────────────────────────── */
 @media (max-width: 900px) {
     .home-container {
         flex-direction: column;
@@ -811,18 +874,167 @@ button {
     }
 }
 
-@media (max-width: 400px) {
+/* ── Phones (≤ 480px) ───────────────────────────────────────────────────────── */
+@media (max-width: 480px) {
     :root {
-        --cell-size: 20px;
+        --cell-size: clamp(19px, 5.8vw, 26px);
+    }
+
+    main {
+        padding: 1rem 0.5rem;
+    }
+
+    /* Header: compact */
+    .app-header {
+        padding: 0.4rem 0.5rem;
+    }
+
+    .app-logo {
+        font-size: 1.3rem;
+    }
+
+    /* Dashboard: vertical layout */
+    .dashboard {
+        flex-direction: column;
+        align-items: stretch;
+        padding: 0.5rem !important;
+    }
+
+    .status-badge {
+        font-size: 0.75rem;
+        padding: 0.2rem 0;
+    }
+
+    /* Player tags: stack vertically */
+    .players-row {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.25rem;
+    }
+
+    .player-tag {
+        font-size: 0.8rem;
+    }
+
+    .vs-text {
+        font-size: 0.6rem;
+    }
+
+    /* Timer and action buttons: full width */
+    .timer {
+        font-size: 0.8rem;
+        padding: 0.3rem 0.6rem;
+    }
+
+    .btn-primary {
+        font-size: 0.8rem;
+        padding: 0.5rem 0.8rem;
+    }
+
+    /* Board: extra compact */
+    .board {
+        max-width: calc(100vw - 1rem);
+        border-radius: 8px;
+    }
+
+    .board-container {
+        padding: 0.5rem;
+        gap: 0.5rem;
+    }
+
+    /* Game Over: phone-optimized */
+    .game-over-card {
+        padding: 1.5rem 1rem;
+        width: calc(100vw - 1.5rem);
+    }
+
+    .game-over-emoji {
+        font-size: 2.5rem;
+    }
+
+    .game-over-title {
+        font-size: 1.3rem;
+    }
+
+    .game-over-subtitle {
+        font-size: 0.85rem;
+        margin-bottom: 1rem;
+    }
+
+    .game-over-btn {
+        padding: 0.5rem 1.2rem !important;
+        font-size: 0.85rem !important;
+    }
+
+    /* Inputs */
+    .name-input {
+        width: 100px;
+        font-size: 0.75rem;
+    }
+
+    /* Settings toolbar: tighter */
+    .settings-toolbar {
+        gap: 0.2rem;
+    }
+
+    .pill {
+        padding: 0.2rem 0.35rem;
+        font-size: 0.6rem;
+    }
+
+    /* Home: compact cards */
+    main > .glass {
+        padding: 1rem !important;
+        margin: 0.25rem;
+    }
+
+    .header h1,
+    main h1 span {
+        font-size: 1.3rem;
+    }
+
+    .header p {
+        font-size: 0.85rem;
+    }
+
+    /* Room join input */
+    .onboarding-card {
+        padding: 1.5rem;
+    }
+
+    /* Profile: extra compact */
+    .profile-card {
+        padding: 1rem;
+    }
+
+    .profile-avatar-display {
+        font-size: 3rem;
+        width: 70px;
+        height: 70px;
+    }
+
+    .avatar-grid {
+        grid-template-columns: repeat(5, 1fr);
+    }
+}
+
+/* ── Tiny phones (≤ 360px) ──────────────────────────────────────────────────── */
+@media (max-width: 360px) {
+    :root {
+        --cell-size: 17px;
     }
 
     .settings-toolbar {
         flex-direction: column;
-        gap: 0.2rem;
+        gap: 0.15rem;
     }
 
     .mode-buttons {
         grid-template-columns: 1fr;
+    }
+
+    .avatar-grid {
+        grid-template-columns: repeat(4, 1fr);
     }
 }
 
@@ -1141,21 +1353,4 @@ button {
 
 .profile-pill {
     font-size: 0.85rem;
-}
-
-@media (max-width: 768px) {
-    .profile-card {
-        padding: 1.5rem;
-        margin: 0.5rem;
-    }
-
-    .avatar-grid {
-        grid-template-columns: repeat(6, 1fr);
-    }
-
-    .avatar-option {
-        font-size: 1.1rem;
-        width: 32px;
-        height: 32px;
-    }
 }
