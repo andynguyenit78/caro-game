@@ -8,9 +8,14 @@ export default function SettingsToolbar() {
     const { language, setLanguage, t } = useLanguage();
     const { mode, setMode } = useTheme();
     const router = useRouter();
+    const [mounted, setMounted] = React.useState(false);
+
+    React.useEffect(() => {
+        setMounted(true);
+    }, []);
 
     return (
-        <div className="settings-toolbar">
+        <div className="settings-toolbar" style={{ visibility: mounted ? 'visible' : 'hidden' }}>
             {/* Profile Button */}
             <button
                 className="pill profile-pill"
