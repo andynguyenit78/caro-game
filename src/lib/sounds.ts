@@ -1,6 +1,6 @@
 // Sound effects using Web Audio API — no external files needed
 const AudioContext = typeof window !== 'undefined'
-    ? (window.AudioContext || (window as any).webkitAudioContext)
+    ? (window.AudioContext || (window as unknown as { webkitAudioContext: typeof window.AudioContext }).webkitAudioContext)
     : null;
 
 let audioCtx: InstanceType<typeof window.AudioContext> | null = null;
