@@ -51,6 +51,19 @@ export function useGameState(roomId: string, userId: string) {
                 // Determine our role
                 if (data.players?.X === userId) {
                     setMyPlayerRole('X');
+                    // If we are the creator and the game hasn't started yet,
+                    // sync our current timer setting to Firebase so Player O gets it too.
+                    if (data.status === 'waiting') {
+                        const localTimerDuration =
+                            typeof window !== 'undefined'
+                                ? parseInt(localStorage.getItem('caroTimerSeconds') || '30', 10)
+                                : 30;
+                        if (data.timerDuration !== localTimerDuration) {
+                            updateGameState(roomId, { timerDuration: localTimerDuration }).catch(
+                                console.error
+                            );
+                        }
+                    }
                     // Fetch opponent O's name
                     if (data.players?.O) {
                         const oName = data.playerNames?.O || '';
