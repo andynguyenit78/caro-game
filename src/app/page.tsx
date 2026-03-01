@@ -74,15 +74,15 @@ export default function Home() {
           {/* Stats Badge */}
           {isLoadingStats ? (
             <div className="stats-badge skeleton" style={{ width: '250px', height: '44px', margin: '1.2rem auto 0' }} />
-          ) : stats && stats.gamesPlayed > 0 && (
+          ) : stats && (
             <div className="stats-badge">
               <div className="stat-item">
-                <span className="stat-value">{stats.wins}</span>
+                <span className="stat-value">{stats.wins || 0}</span>
                 <span className="stat-label">{t('wins')}</span>
               </div>
               <div className="stat-divider" />
               <div className="stat-item">
-                <span className="stat-value">{stats.losses}</span>
+                <span className="stat-value">{stats.losses || 0}</span>
                 <span className="stat-label">{t('losses')}</span>
               </div>
               <div className="stat-divider" />
