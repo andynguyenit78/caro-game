@@ -149,7 +149,7 @@ export const translations = {
         sound: 'Âm thanh',
         soundOn: 'Bật',
         soundOff: 'Tắt',
-        timerDuration: 'Tử giờ di động',
+        timerDuration: 'Bộ đếm thời gian',
     },
 } as const;
 

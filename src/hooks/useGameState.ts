@@ -68,6 +68,10 @@ export function useGameState(roomId: string, userId: string) {
             } else if (!hasInitialized.current) {
                 hasInitialized.current = true;
                 const localName = getLocalName();
+                const localTimerDuration =
+                    typeof window !== 'undefined'
+                        ? parseInt(localStorage.getItem('caroTimerSeconds') || '30', 10)
+                        : 30;
                 const newState: GameState = {
                     board: createEmptyBoard(15),
                     currentPlayer: 'X',
@@ -75,6 +79,7 @@ export function useGameState(roomId: string, userId: string) {
                     status: 'waiting',
                     players: { X: userId },
                     playerNames: { X: localName },
+                    timerDuration: localTimerDuration,
                 };
                 setGameState(roomId, newState).catch(console.error);
                 // Also update profile name

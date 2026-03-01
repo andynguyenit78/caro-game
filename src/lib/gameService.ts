@@ -18,6 +18,7 @@ export interface GameState {
     };
     lastMove?: [number, number] | null;
     quit?: boolean;
+    timerDuration?: number;
     playAgain?: {
         X?: boolean;
         O?: boolean;

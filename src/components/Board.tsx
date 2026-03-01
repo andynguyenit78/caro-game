@@ -29,7 +29,10 @@ export default function Board({ roomId, userId }: { roomId: string; userId: stri
         lastMove,
     } = useGameState(roomId, userId);
     const { t } = useLanguage();
-    const { soundEnabled, timerSeconds } = usePlayerSettings();
+    const { soundEnabled } = usePlayerSettings();
+    // Read timer duration from Firebase game state so both players are always in sync.
+    // Fall back to 30s for rooms created before this field was added.
+    const timerDuration = gameState.timerDuration ?? MOVE_TIMER_SECONDS;
     const [playerName, setPlayerName] = useState('');
     const [editingName, setEditingName] = useState(false);
     const [nameInput, setNameInput] = useState('');
@@ -75,18 +78,18 @@ export default function Board({ roomId, userId }: { roomId: string; userId: stri
         prevWinnerRef.current = gameState.winner;
     }, [gameState.winner, myPlayerRole]);
 
-    // Move timer — uses configurable duration from player settings
+    // Move timer — reads duration from Firebase so both players count down the same value
     useEffect(() => {
         if (gameState.status !== 'playing') {
-            setTimeLeft(timerSeconds);
+            setTimeLeft(timerDuration);
             return;
         }
-        setTimeLeft(timerSeconds);
+        setTimeLeft(timerDuration);
         const interval = setInterval(() => {
             setTimeLeft((prev) => prev - 1);
         }, 1000);
         return () => clearInterval(interval);
-    }, [gameState.status, gameState.currentPlayer, timerSeconds]);
+    }, [gameState.status, gameState.currentPlayer, timerDuration]);
 
     // Auto-trigger timeout win when timer hits 0
     useEffect(() => {
