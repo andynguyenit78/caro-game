@@ -226,11 +226,11 @@ button {
 }
 
 .game-over-overlay.win {
-  background: radial-gradient(ellipse at center, rgba(0, 0, 0, 0.3) 0%, rgba(0, 0, 0, 0.7) 100%);
+  background: radial-gradient(ellipse at center, rgba(10, 10, 30, 0.88) 0%, rgba(0, 0, 0, 0.95) 100%);
 }
 
 .game-over-overlay.lose {
-  background: radial-gradient(ellipse at center, rgba(20, 0, 0, 0.4) 0%, rgba(0, 0, 0, 0.8) 100%);
+  background: radial-gradient(ellipse at center, rgba(30, 5, 5, 0.88) 0%, rgba(0, 0, 0, 0.95) 100%);
 }
 
 /* Card */
