@@ -45,7 +45,7 @@ export default function PlayerTag({
             {stats && (
                 <span className="rank-badge" title={`${rank.title} — ${score} pts`}>
                     {rankIcon}
-                    <span className="rank-level">Lv.{rank.level}</span>
+                    <span className="rank-level">{rank.title}</span>
                 </span>
             )}
 
