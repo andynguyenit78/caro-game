@@ -6,11 +6,12 @@ import GameOverOverlay from './GameOverOverlay';
 import { useLanguage } from '../context/LanguageContext';
 import { Player } from '../lib/gameLogic';
 import { playMoveSound, playVictorySound, playDefeatSound } from '../lib/sounds';
+import { updatePlayerName } from '../lib/playerStats';
 
 const MOVE_TIMER_SECONDS = 30;
 
 export default function Board({ roomId, userId }: { roomId: string, userId: string }) {
-    const { gameState, myPlayerRole, makeMove, joinGame, resetGame, isMyTurn, lastMove } = useGameState(roomId, userId);
+    const { gameState, myPlayerRole, opponentName, makeMove, joinGame, resetGame, isMyTurn, lastMove } = useGameState(roomId, userId);
     const { t } = useLanguage();
     const [playerName, setPlayerName] = useState('');
     const [editingName, setEditingName] = useState(false);
@@ -21,8 +22,7 @@ export default function Board({ roomId, userId }: { roomId: string, userId: stri
 
     // Load player name
     useEffect(() => {
-        const saved = localStorage.getItem('caroPlayerName') || '';
-        setPlayerName(saved);
+        setPlayerName(localStorage.getItem('caroPlayerName') || '');
     }, []);
 
     // Sound on move
@@ -74,7 +74,9 @@ export default function Board({ roomId, userId }: { roomId: string, userId: stri
         setPlayerName(trimmed);
         localStorage.setItem('caroPlayerName', trimmed);
         setEditingName(false);
-    }, [nameInput]);
+        // Sync to Firebase profile
+        updatePlayerName(userId, trimmed);
+    }, [nameInput, userId]);
 
     if (!gameState || gameState.status === 'loading') {
         return <div className="glass" style={{ padding: '2rem' }}>{t('loadingGame')}</div>;
@@ -102,27 +104,39 @@ export default function Board({ roomId, userId }: { roomId: string, userId: stri
     };
 
     const timerDanger = timeLeft <= 10;
+    const opponentRole = myPlayerRole === 'X' ? 'O' : 'X';
 
     return (
         <div className="board-container">
             <div className="dashboard glass">
-                <div className="status-badge" style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: '0.2rem' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
-                        <span>{t('role')}:</span>
-                        {myPlayerRole ? (
+                <div className="status-badge" style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: '0.3rem' }}>
+                    {/* Player info row */}
+                    <div className="players-row">
+                        <div className="player-tag">
                             <span className={myPlayerRole === 'X' ? 'icon-x' : 'icon-o'} style={{ fontWeight: 'bold' }}>
-                                {myPlayerRole}
+                                {myPlayerRole || '?'}
                             </span>
-                        ) : t('spectator')}
-                        {playerName && <span style={{ opacity: 0.6, fontSize: '0.85rem' }}>({playerName})</span>}
-                        {!editingName && (
-                            <button className="name-edit-btn" onClick={() => { setNameInput(playerName); setEditingName(true); }} title={t('editName')}>
-                                ✏️
-                            </button>
+                            <span>{playerName || t('you')}</span>
+                            {!editingName && (
+                                <button className="name-edit-btn" onClick={() => { setNameInput(playerName); setEditingName(true); }} title={t('editName')}>
+                                    ✏️
+                                </button>
+                            )}
+                        </div>
+                        {gameState.status !== 'waiting' && (
+                            <>
+                                <span className="vs-text">VS</span>
+                                <div className="player-tag">
+                                    <span className={opponentRole === 'X' ? 'icon-x' : 'icon-o'} style={{ fontWeight: 'bold' }}>
+                                        {opponentRole}
+                                    </span>
+                                    <span>{opponentName || t('opponent')}</span>
+                                </div>
+                            </>
                         )}
                     </div>
                     {editingName && (
-                        <div style={{ display: 'flex', gap: '0.3rem', marginTop: '0.3rem' }}>
+                        <div style={{ display: 'flex', gap: '0.3rem' }}>
                             <input
                                 className="name-input"
                                 type="text"

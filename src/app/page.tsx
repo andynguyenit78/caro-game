@@ -3,19 +3,31 @@ import { useRouter } from 'next/navigation';
 import { v4 as uuidv4 } from 'uuid';
 import { useState, useEffect } from 'react';
 import { useLanguage } from '../context/LanguageContext';
+import { subscribeToStats, fetchLeaderboard, PlayerStats, LeaderboardEntry } from '../lib/playerStats';
 
 export default function Home() {
   const router = useRouter();
   const [roomId, setRoomId] = useState('');
+  const [stats, setStats] = useState<PlayerStats | null>(null);
+  const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
   const { t } = useLanguage();
 
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      let userId = localStorage.getItem('caroUserId');
-      if (!userId) {
-        localStorage.setItem('caroUserId', uuidv4());
-      }
+    if (typeof window === 'undefined') return;
+
+    let userId = localStorage.getItem('caroUserId');
+    if (!userId) {
+      userId = uuidv4();
+      localStorage.setItem('caroUserId', userId);
     }
+
+    // Subscribe to own stats
+    const unsub = subscribeToStats(userId, setStats);
+
+    // Fetch leaderboard
+    fetchLeaderboard(10).then(setLeaderboard);
+
+    return () => unsub();
   }, []);
 
   const createGame = () => {
@@ -34,6 +46,12 @@ export default function Home() {
     router.push('/ai');
   };
 
+  const winRate = stats && stats.gamesPlayed > 0
+    ? Math.round((stats.wins / stats.gamesPlayed) * 100)
+    : 0;
+
+  const myUserId = typeof window !== 'undefined' ? localStorage.getItem('caroUserId') : null;
+
   return (
     <main>
       <div className="glass" style={{ padding: '3rem', maxWidth: '500px', width: '100%', textAlign: 'center' }}>
@@ -42,21 +60,35 @@ export default function Home() {
           <p>{t('subtitle')}</p>
         </div>
 
+        {/* Stats Badge */}
+        {stats && stats.gamesPlayed > 0 && (
+          <div className="stats-badge">
+            <div className="stat-item">
+              <span className="stat-value">{stats.wins}</span>
+              <span className="stat-label">{t('wins')}</span>
+            </div>
+            <div className="stat-divider" />
+            <div className="stat-item">
+              <span className="stat-value">{stats.losses}</span>
+              <span className="stat-label">{t('losses')}</span>
+            </div>
+            <div className="stat-divider" />
+            <div className="stat-item">
+              <span className="stat-value">{winRate}%</span>
+              <span className="stat-label">{t('winRate')}</span>
+            </div>
+          </div>
+        )}
+
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', marginTop: '2rem' }}>
 
           {/* Mode Buttons */}
           <div className="mode-buttons">
-            <button
-              className="btn-primary mode-btn"
-              onClick={createGame}
-            >
+            <button className="btn-primary mode-btn" onClick={createGame}>
               <span className="mode-icon">👥</span>
               <span className="mode-label">{t('playFriend')}</span>
             </button>
-            <button
-              className="btn-ai mode-btn"
-              onClick={playAI}
-            >
+            <button className="btn-ai mode-btn" onClick={playAI}>
               <span className="mode-icon">🤖</span>
               <span className="mode-label">{t('playVsAI')}</span>
             </button>
@@ -89,6 +121,30 @@ export default function Home() {
             </button>
           </form>
         </div>
+
+        {/* Leaderboard */}
+        {leaderboard.length > 0 && (
+          <div className="leaderboard">
+            <h3 className="leaderboard-title">🏆 {t('leaderboard')}</h3>
+            <div className="leaderboard-list">
+              {leaderboard.map((entry, index) => (
+                <div
+                  key={entry.userId}
+                  className={`leaderboard-row ${entry.userId === myUserId ? 'leaderboard-row-me' : ''}`}
+                >
+                  <span className="lb-rank">
+                    {index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : `#${index + 1}`}
+                  </span>
+                  <span className="lb-name">{entry.name}</span>
+                  <span className="lb-stats">
+                    {entry.wins}W {entry.losses}L
+                  </span>
+                  <span className="lb-winrate">{entry.winRate}%</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     </main>
   );

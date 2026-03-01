@@ -2,6 +2,7 @@ import { useEffect, useState, useCallback, useRef } from 'react';
 import { ref, onValue, set, update, get } from 'firebase/database';
 import { db } from '../lib/firebase';
 import { BoardState, Player, createEmptyBoard, checkWin } from '../lib/gameLogic';
+import { recordGameResult, updatePlayerName, getPlayerName } from '../lib/playerStats';
 
 export interface GameState {
     board: BoardState;
@@ -9,6 +10,10 @@ export interface GameState {
     winner: Player | '';
     status: 'loading' | 'waiting' | 'playing' | 'finished';
     players: {
+        X?: string;
+        O?: string;
+    };
+    playerNames?: {
         X?: string;
         O?: string;
     };
@@ -26,14 +31,23 @@ const createDefaultState = (): GameState => ({
 export function useGameState(roomId: string, userId: string) {
     const [gameState, setGameState] = useState<GameState>(createDefaultState);
     const [myPlayerRole, setMyPlayerRole] = useState<Player>('');
+    const [opponentName, setOpponentName] = useState('');
     const hasInitialized = useRef(false);
+    const hasRecordedResult = useRef(false);
+
+    // Get local player name
+    const getLocalName = () => {
+        return typeof window !== 'undefined' ? localStorage.getItem('caroPlayerName') || '' : '';
+    };
 
     useEffect(() => {
         if (!roomId || !userId) return;
 
         // Reset on roomId change
         hasInitialized.current = false;
+        hasRecordedResult.current = false;
         setMyPlayerRole('');
+        setOpponentName('');
         setGameState(createDefaultState());
 
         const gameRef = ref(db, `games/${roomId}`);
@@ -42,55 +56,79 @@ export function useGameState(roomId: string, userId: string) {
             const data = snapshot.val();
 
             if (data) {
-                // Room exists in Firebase — load it
-                // Ensure board is present (fallback for corrupted states)
                 if (!data.board) {
                     data.board = createEmptyBoard(15);
                 }
                 setGameState(data as GameState);
 
-                // Determine our role based on stored player IDs
+                // Determine our role
                 if (data.players?.X === userId) {
                     setMyPlayerRole('X');
+                    // Fetch opponent O's name
+                    if (data.players?.O) {
+                        const oName = data.playerNames?.O || '';
+                        setOpponentName(oName);
+                    }
                 } else if (data.players?.O === userId) {
                     setMyPlayerRole('O');
+                    // Fetch opponent X's name
+                    const xName = data.playerNames?.X || '';
+                    setOpponentName(xName);
                 } else {
-                    // We're a spectator (our userId doesn't match either player)
                     setMyPlayerRole('');
                 }
                 hasInitialized.current = true;
             } else if (!hasInitialized.current) {
-                // Room does NOT exist and we haven't initialized yet
-                // Create it and join as Player X
                 hasInitialized.current = true;
+                const localName = getLocalName();
                 const newState: GameState = {
                     board: createEmptyBoard(15),
                     currentPlayer: 'X',
                     winner: '',
                     status: 'waiting',
                     players: { X: userId },
+                    playerNames: { X: localName },
                 };
                 set(gameRef, newState);
-                // Don't need to setGameState here — the set() above will
-                // trigger onValue again with the new data
+                // Also update profile name
+                if (localName) updatePlayerName(userId, localName);
             }
         });
 
         return () => unsubscribe();
     }, [roomId, userId]);
 
+    // Record game result when game finishes
+    useEffect(() => {
+        if (
+            gameState.status === 'finished' &&
+            gameState.winner &&
+            !hasRecordedResult.current &&
+            gameState.players.X &&
+            gameState.players.O
+        ) {
+            hasRecordedResult.current = true;
+            const winnerId = gameState.winner === 'X' ? gameState.players.X : gameState.players.O;
+            const loserId = gameState.winner === 'X' ? gameState.players.O : gameState.players.X;
+            if (winnerId && loserId) {
+                recordGameResult(winnerId, loserId);
+            }
+        }
+    }, [gameState.status, gameState.winner, gameState.players]);
+
     // Join an existing game as Player O
     const joinGame = useCallback(async () => {
         if (myPlayerRole !== '' || gameState.status !== 'waiting') return;
 
-        // Only join as O if the slot is free and we're not already Player X
         if (!gameState.players.O && gameState.players.X !== userId) {
-            const updates = {
+            const localName = getLocalName();
+            const updates: Record<string, string> = {
                 'players/O': userId,
                 'status': 'playing',
+                'playerNames/O': localName,
             };
             await update(ref(db, `games/${roomId}`), updates);
-            // onValue will fire and update our role automatically
+            if (localName) updatePlayerName(userId, localName);
         }
     }, [roomId, userId, gameState, myPlayerRole]);
 
@@ -123,6 +161,7 @@ export function useGameState(roomId: string, userId: string) {
 
     const resetGame = useCallback(async () => {
         if (myPlayerRole === '') return;
+        hasRecordedResult.current = false;
 
         const updates = {
             board: createEmptyBoard(15),
@@ -138,6 +177,7 @@ export function useGameState(roomId: string, userId: string) {
     return {
         gameState,
         myPlayerRole,
+        opponentName,
         makeMove,
         joinGame,
         resetGame,

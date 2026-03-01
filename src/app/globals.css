@@ -652,3 +652,191 @@ button {
     grid-template-columns: 1fr;
   }
 }
+
+/* ===== Stats Badge ===== */
+.stats-badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 1.2rem;
+  padding: 0.7rem 1.2rem;
+  border-radius: 12px;
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+}
+
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.1rem;
+}
+
+.stat-value {
+  font-size: 1.2rem;
+  font-weight: 700;
+}
+
+.stat-label {
+  font-size: 0.7rem;
+  opacity: 0.5;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.stat-divider {
+  width: 1px;
+  height: 28px;
+  background: var(--grid-line-color);
+}
+
+/* ===== Players Row / VS Layout ===== */
+.players-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.player-tag {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.9rem;
+}
+
+.vs-text {
+  font-size: 0.7rem;
+  font-weight: 700;
+  opacity: 0.4;
+  letter-spacing: 0.05em;
+}
+
+/* ===== Name Onboarding ===== */
+.onboarding-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.onboarding-card {
+  padding: 2.5rem;
+  max-width: 400px;
+  width: 90%;
+  text-align: center;
+  animation: slideUp 0.4s ease-out;
+}
+
+.onboarding-emoji {
+  font-size: 3rem;
+  margin-bottom: 0.5rem;
+}
+
+.onboarding-input {
+  width: 100%;
+  padding: 0.8rem 1rem;
+  border-radius: 10px;
+  border: 1px solid var(--grid-line-color);
+  background: var(--background);
+  color: var(--text-color);
+  font-size: 1rem;
+  outline: none;
+  font-family: 'Outfit', sans-serif;
+  text-align: center;
+  transition: border-color 0.2s;
+}
+
+.onboarding-input:focus {
+  border-color: var(--player-x-color);
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ===== Leaderboard ===== */
+.leaderboard {
+  margin-top: 2rem;
+  text-align: left;
+}
+
+.leaderboard-title {
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 0.75rem;
+  text-align: center;
+}
+
+.leaderboard-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.leaderboard-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.7rem;
+  border-radius: 8px;
+  transition: background 0.2s;
+  font-size: 0.85rem;
+}
+
+.leaderboard-row:hover {
+  background: var(--glass-bg);
+}
+
+.leaderboard-row-me {
+  background: rgba(0, 119, 182, 0.08);
+  border: 1px solid rgba(0, 119, 182, 0.2);
+}
+
+[data-theme='dark'] .leaderboard-row-me {
+  background: rgba(0, 119, 182, 0.15);
+  border: 1px solid rgba(0, 119, 182, 0.3);
+}
+
+.lb-rank {
+  min-width: 28px;
+  text-align: center;
+  font-weight: 600;
+  font-size: 0.8rem;
+}
+
+.lb-name {
+  flex: 1;
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.lb-stats {
+  font-size: 0.75rem;
+  opacity: 0.5;
+  white-space: nowrap;
+}
+
+.lb-winrate {
+  font-weight: 700;
+  font-size: 0.85rem;
+  min-width: 36px;
+  text-align: right;
+  color: var(--player-x-color);
+}

@@ -6,6 +6,7 @@ import GameOverOverlay from '../../components/GameOverOverlay';
 import { useLanguage } from '../../context/LanguageContext';
 import { Player } from '../../lib/gameLogic';
 import { playMoveSound, playVictorySound, playDefeatSound } from '../../lib/sounds';
+import { updatePlayerName, recordAIGameResult } from '../../lib/playerStats';
 
 export default function AIBoard() {
     const { gameState, makeMove, resetGame } = useAIGameState();
@@ -15,6 +16,7 @@ export default function AIBoard() {
     const [nameInput, setNameInput] = useState('');
     const prevBoardRef = useRef<string>('');
     const prevWinnerRef = useRef<string>('');
+    const hasRecordedResult = useRef(false);
 
     // Load player name
     useEffect(() => {
@@ -30,13 +32,22 @@ export default function AIBoard() {
         prevBoardRef.current = boardStr;
     }, [gameState.board]);
 
-    // Sound on win/lose
+    // Sound on win/lose + record stats
     useEffect(() => {
         if (gameState.winner && gameState.winner !== prevWinnerRef.current) {
             if (gameState.winner === 'X') {
                 playVictorySound();
             } else {
                 playDefeatSound();
+            }
+
+            // Record AI game result
+            if (!hasRecordedResult.current) {
+                hasRecordedResult.current = true;
+                const userId = localStorage.getItem('caroUserId');
+                if (userId) {
+                    recordAIGameResult(userId, gameState.winner === 'X');
+                }
             }
         }
         prevWinnerRef.current = gameState.winner;
@@ -47,7 +58,15 @@ export default function AIBoard() {
         setPlayerName(trimmed);
         localStorage.setItem('caroPlayerName', trimmed);
         setEditingName(false);
+        // Sync to Firebase
+        const userId = localStorage.getItem('caroUserId');
+        if (userId) updatePlayerName(userId, trimmed);
     }, [nameInput]);
+
+    const handleReset = useCallback(() => {
+        hasRecordedResult.current = false;
+        resetGame();
+    }, [resetGame]);
 
     const handleCellClick = (row: number, col: number) => {
         makeMove(row, col);
@@ -63,20 +82,25 @@ export default function AIBoard() {
     return (
         <div className="board-container">
             <div className="dashboard glass">
-                <div className="status-badge" style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: '0.2rem' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
-                        <span>{t('role')}:</span>
-                        <span className="icon-x" style={{ fontWeight: 'bold' }}>X</span>
-                        {playerName && <span style={{ opacity: 0.6, fontSize: '0.85rem' }}>({playerName})</span>}
-                        {!editingName && (
-                            <button className="name-edit-btn" onClick={() => { setNameInput(playerName); setEditingName(true); }} title={t('editName')}>
-                                ✏️
-                            </button>
-                        )}
-                        <span style={{ opacity: 0.5, fontSize: '0.85rem' }}>vs 🤖 AI</span>
+                <div className="status-badge" style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: '0.3rem' }}>
+                    <div className="players-row">
+                        <div className="player-tag">
+                            <span className="icon-x" style={{ fontWeight: 'bold' }}>X</span>
+                            <span>{playerName || t('you')}</span>
+                            {!editingName && (
+                                <button className="name-edit-btn" onClick={() => { setNameInput(playerName); setEditingName(true); }} title={t('editName')}>
+                                    ✏️
+                                </button>
+                            )}
+                        </div>
+                        <span className="vs-text">VS</span>
+                        <div className="player-tag">
+                            <span className="icon-o" style={{ fontWeight: 'bold' }}>O</span>
+                            <span>🤖 AI</span>
+                        </div>
                     </div>
                     {editingName && (
-                        <div style={{ display: 'flex', gap: '0.3rem', marginTop: '0.3rem' }}>
+                        <div style={{ display: 'flex', gap: '0.3rem' }}>
                             <input
                                 className="name-input"
                                 type="text"
@@ -98,7 +122,7 @@ export default function AIBoard() {
                     </div>
                 </div>
 
-                <button className="btn-primary" onClick={resetGame}>
+                <button className="btn-primary" onClick={handleReset}>
                     {t('newGame')}
                 </button>
             </div>
@@ -129,7 +153,7 @@ export default function AIBoard() {
             {gameState.status === 'finished' && (
                 <GameOverOverlay
                     isWinner={gameState.winner === 'X'}
-                    onPlayAgain={resetGame}
+                    onPlayAgain={handleReset}
                     playerRole={gameState.winner || ''}
                 />
             )}

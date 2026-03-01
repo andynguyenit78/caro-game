@@ -47,6 +47,19 @@ export const translations = {
         // Player
         editName: 'Edit Name',
         enterName: 'Your name',
+        you: 'You',
+        opponent: 'Opponent',
+
+        // Stats
+        wins: 'Wins',
+        losses: 'Losses',
+        winRate: 'Win Rate',
+
+        // Onboarding & Leaderboard
+        welcomeTitle: 'Welcome to Caro!',
+        welcomeSubtitle: 'Enter your name to get started',
+        letsPlay: "Let's Play! 🎮",
+        leaderboard: 'Top Players',
     },
     vi: {
         // Home / Lobby
@@ -94,6 +107,19 @@ export const translations = {
         // Player
         editName: 'Đổi tên',
         enterName: 'Tên của bạn',
+        you: 'Bạn',
+        opponent: 'Đối thủ',
+
+        // Stats
+        wins: 'Thắng',
+        losses: 'Thua',
+        winRate: 'Tỷ lệ',
+
+        // Onboarding & Leaderboard
+        welcomeTitle: 'Chào mừng đến Caro!',
+        welcomeSubtitle: 'Nhập tên của bạn để bắt đầu',
+        letsPlay: 'Chơi thôi! 🎮',
+        leaderboard: 'Bảng Xếp Hạng',
     },
 } as const;
 
