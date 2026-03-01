@@ -415,14 +415,76 @@ button {
   }
 }
 
-.settings-toolbar {
+.app-header {
   position: fixed;
-  top: 1rem;
-  right: 1rem;
+  top: 0;
+  left: 0;
+  width: 100%;
+  padding: 1rem 1.5rem;
   z-index: 900;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  pointer-events: none;
+  /* Let clicks pass through empty spaces */
+}
+
+.app-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  pointer-events: auto;
+  /* Re-enable clicks for brand */
+  transition: transform 0.2s ease;
+}
+
+.app-brand:hover {
+  transform: scale(1.05);
+}
+
+.app-logo {
+  font-size: 2rem;
+  filter: drop-shadow(0 0 10px rgba(100, 200, 255, 0.5));
+}
+
+.app-title-group {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.app-title {
+  font-size: 1.2rem;
+  font-weight: 700;
+  margin: 0;
+  line-height: 1;
+  background: linear-gradient(135deg, #fff, #aab);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+}
+
+/* Light mode overrides */
+[data-theme='light'] .app-title {
+  background: linear-gradient(135deg, #223, #556);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.app-version {
+  font-size: 0.7rem;
+  font-weight: 600;
+  opacity: 0.6;
+  letter-spacing: 0.05em;
+  margin-top: 2px;
+}
+
+.settings-toolbar {
   display: flex;
   gap: 0.5rem;
   align-items: center;
+  pointer-events: auto;
+  /* Re-enable clicks for settings */
 }
 
 .top-left-back-btn {
