@@ -1,6 +1,7 @@
 import { ref, onValue, set, update } from 'firebase/database';
 import { db } from './firebase';
 import { BoardState, Player } from './gameLogic';
+import { PlayerStats } from './playerStats';
 
 export interface GameState {
     board: BoardState;
@@ -31,7 +32,7 @@ export function subscribeToGame(roomId: string, callback: (data: GameState | nul
 /**
  * Subscribes to a player's profile data
  */
-export function subscribeToPlayer(userId: string, callback: (data: Record<string, unknown> | null) => void) {
+export function subscribeToPlayer(userId: string, callback: (data: PlayerStats | null) => void) {
     const userRef = ref(db, `users/${userId}`);
     return onValue(userRef, (snapshot) => {
         callback(snapshot.val());

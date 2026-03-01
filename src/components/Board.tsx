@@ -11,7 +11,7 @@ import { updatePlayerName } from '../lib/playerStats';
 const MOVE_TIMER_SECONDS = 30;
 
 export default function Board({ roomId, userId }: { roomId: string, userId: string }) {
-    const { gameState, myPlayerRole, opponentName, playersStats, makeMove, joinGame, resetGame, isMyTurn, lastMove } = useGameState(roomId, userId) as any;
+    const { gameState, myPlayerRole, opponentName, playersStats, makeMove, joinGame, resetGame, isMyTurn, lastMove } = useGameState(roomId, userId);
     const { t } = useLanguage();
     const [playerName, setPlayerName] = useState('');
     const [editingName, setEditingName] = useState(false);
@@ -116,13 +116,13 @@ export default function Board({ roomId, userId }: { roomId: string, userId: stri
                             <span className={myPlayerRole === 'X' ? 'icon-x' : 'icon-o'} style={{ fontWeight: 'bold' }}>
                                 {myPlayerRole || '?'}
                             </span>
-                            {playersStats && playersStats[myPlayerRole as 'X' | 'O']?.avatar && (
-                                <span className="lb-avatar">{playersStats[myPlayerRole as 'X' | 'O'].avatar}</span>
+                            {playersStats && myPlayerRole && playersStats[myPlayerRole as 'X' | 'O']?.avatar && (
+                                <span className="lb-avatar">{playersStats[myPlayerRole as 'X' | 'O']?.avatar}</span>
                             )}
                             <span>{playerName || t('you')}</span>
-                            {playersStats && playersStats[myPlayerRole as 'X' | 'O']?.gamesPlayed > 0 && (
+                            {playersStats && myPlayerRole && (playersStats[myPlayerRole as 'X' | 'O']?.gamesPlayed ?? 0) > 0 && (
                                 <span className="lb-stats" style={{ marginLeft: '0.2rem' }}>
-                                    ({Math.round((playersStats[myPlayerRole as 'X' | 'O'].wins / playersStats[myPlayerRole as 'X' | 'O'].gamesPlayed) * 100)}%)
+                                    ({Math.round(((playersStats[myPlayerRole as 'X' | 'O']?.wins ?? 0) / (playersStats[myPlayerRole as 'X' | 'O']?.gamesPlayed ?? 1)) * 100)}%)
                                 </span>
                             )}
                             {!editingName && (
@@ -138,13 +138,13 @@ export default function Board({ roomId, userId }: { roomId: string, userId: stri
                                     <span className={opponentRole === 'X' ? 'icon-x' : 'icon-o'} style={{ fontWeight: 'bold' }}>
                                         {opponentRole}
                                     </span>
-                                    {playersStats && playersStats[opponentRole as 'X' | 'O']?.avatar && (
-                                        <span className="lb-avatar">{playersStats[opponentRole as 'X' | 'O'].avatar}</span>
+                                    {playersStats && opponentRole && playersStats[opponentRole as 'X' | 'O']?.avatar && (
+                                        <span className="lb-avatar">{playersStats[opponentRole as 'X' | 'O']?.avatar}</span>
                                     )}
                                     <span>{opponentName || t('opponent')}</span>
-                                    {playersStats && playersStats[opponentRole as 'X' | 'O']?.gamesPlayed > 0 && (
+                                    {playersStats && opponentRole && (playersStats[opponentRole as 'X' | 'O']?.gamesPlayed ?? 0) > 0 && (
                                         <span className="lb-stats" style={{ marginLeft: '0.2rem' }}>
-                                            ({Math.round((playersStats[opponentRole as 'X' | 'O'].wins / playersStats[opponentRole as 'X' | 'O'].gamesPlayed) * 100)}%)
+                                            ({Math.round(((playersStats[opponentRole as 'X' | 'O']?.wins ?? 0) / (playersStats[opponentRole as 'X' | 'O']?.gamesPlayed ?? 1)) * 100)}%)
                                         </span>
                                     )}
                                 </div>

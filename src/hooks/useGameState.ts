@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { Player, createEmptyBoard, checkWin } from '../lib/gameLogic';
-import { recordGameResult, updatePlayerName } from '../lib/playerStats';
+import { PlayerStats, recordGameResult, updatePlayerName } from '../lib/playerStats';
 import { GameState, subscribeToGame, subscribeToPlayer, setGameState, updateGameState } from '../lib/gameService';
 
 const createDefaultState = (): GameState => ({
@@ -156,7 +156,7 @@ export function useGameState(roomId: string, userId: string) {
     }, [roomId, myPlayerRole]);
 
     // Fetch stats for both players
-    const [playersStats, setPlayersStats] = useState<{ X: Record<string, unknown> | null, O: Record<string, unknown> | null }>({ X: null, O: null });
+    const [playersStats, setPlayersStats] = useState<{ X: PlayerStats | null, O: PlayerStats | null }>({ X: null, O: null });
 
     useEffect(() => {
         if (!gameState.players.X && !gameState.players.O) return;
