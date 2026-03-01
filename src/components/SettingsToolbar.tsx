@@ -53,7 +53,7 @@ export default function SettingsToolbar() {
                 {/* Language Toggle */}
                 <div className="settings-group">
                     <div
-                        className="toggle-pills"
+                        className="toggle-pills toggle-pills-language"
                         style={
                             {
                                 '--num-pills': 2,
@@ -67,14 +67,14 @@ export default function SettingsToolbar() {
                             onClick={() => setLanguage('en')}
                             title="English"
                         >
-                            🇬🇧 EN
+                            🇬🇧 <span>EN</span>
                         </button>
                         <button
                             className={`pill ${language === 'vi' ? 'active' : ''}`}
                             onClick={() => setLanguage('vi')}
                             title="Tiếng Việt"
                         >
-                            🇻🇳 VI
+                            🇻🇳 <span>VI</span>
                         </button>
                     </div>
                 </div>
@@ -90,7 +90,7 @@ export default function SettingsToolbar() {
                             } as React.CSSProperties
                         }
                     >
-                        <div className="slider-bg" />
+                        <div className="slider-bg slider-bg-theme" />
                         <button
                             className={`pill ${mode === 'light' ? 'active' : ''}`}
                             onClick={(e) => setMode('light', e)}
