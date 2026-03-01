@@ -8,7 +8,7 @@ export default async function PlayRoom({ params }: { params: Promise<{ roomId: s
     return (
         <main>
             <div>
-                <div className="header">
+                <div className="header board-page-header">
                     <h1>Real-Time Caro</h1>
                     <p>Room: {roomId}</p>
                 </div>
