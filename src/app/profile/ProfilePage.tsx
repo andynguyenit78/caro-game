@@ -157,7 +157,16 @@ export default function ProfilePage() {
                 {/* Game Settings */}
                 <div className="profile-field">
                     <label className="profile-label">🔔 {t('sound')}</label>
-                    <div className="toggle-pills">
+                    <div
+                        className="toggle-pills"
+                        style={
+                            {
+                                '--num-pills': 2,
+                                '--active-idx': soundEnabled ? 0 : 1,
+                            } as React.CSSProperties
+                        }
+                    >
+                        <div className="slider-bg" />
                         <button
                             className={`pill ${soundEnabled ? 'active' : ''}`}
                             onClick={() => setSoundEnabled(true)}
@@ -175,7 +184,16 @@ export default function ProfilePage() {
 
                 <div className="profile-field">
                     <label className="profile-label">⏱ {t('timerDuration')}</label>
-                    <div className="toggle-pills">
+                    <div
+                        className="toggle-pills"
+                        style={
+                            {
+                                '--num-pills': TIMER_OPTIONS.length,
+                                '--active-idx': Math.max(0, TIMER_OPTIONS.indexOf(timerSeconds)),
+                            } as React.CSSProperties
+                        }
+                    >
+                        <div className="slider-bg" />
                         {TIMER_OPTIONS.map((s) => (
                             <button
                                 key={s}
