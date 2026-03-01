@@ -52,7 +52,16 @@ export default function SettingsToolbar() {
 
                 {/* Language Toggle */}
                 <div className="settings-group">
-                    <div className="toggle-pills">
+                    <div
+                        className="toggle-pills"
+                        style={
+                            {
+                                '--num-pills': 2,
+                                '--active-idx': language === 'en' ? 0 : 1,
+                            } as React.CSSProperties
+                        }
+                    >
+                        <div className="slider-bg" />
                         <button
                             className={`pill ${language === 'en' ? 'active' : ''}`}
                             onClick={() => setLanguage('en')}
@@ -72,7 +81,16 @@ export default function SettingsToolbar() {
 
                 {/* Theme Toggle */}
                 <div className="settings-group">
-                    <div className="toggle-pills">
+                    <div
+                        className="toggle-pills"
+                        style={
+                            {
+                                '--num-pills': 3,
+                                '--active-idx': mode === 'light' ? 0 : mode === 'system' ? 1 : 2,
+                            } as React.CSSProperties
+                        }
+                    >
+                        <div className="slider-bg" />
                         <button
                             className={`pill ${mode === 'light' ? 'active' : ''}`}
                             onClick={() => setMode('light')}
