@@ -6,8 +6,8 @@ export default async function PlayRoom({ params }: { params: Promise<{ roomId: s
     const roomId = resolvedParams.roomId;
 
     return (
-        <main>
-            <div>
+        <main style={{ justifyContent: 'flex-start', paddingTop: '5rem' }}>
+            <div style={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                 <div className="header">
                     <h1>Real-Time Caro</h1>
                     <p>Room: {roomId}</p>
