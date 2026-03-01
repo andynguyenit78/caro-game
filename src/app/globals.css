@@ -608,15 +608,21 @@ button {
     padding: 0.3rem 0.6rem;
     border-radius: 16px;
     font-size: 0.75rem;
-    font-weight: 500;
+    /* Keep font-weight constant — prevents width shift when toggling active */
+    font-weight: 600;
     color: var(--text-color);
-    opacity: 0.5;
-    transition: all 0.25s ease;
+    opacity: 0.45;
+    transition:
+        opacity 0.2s ease,
+        background 0.2s ease,
+        color 0.2s ease;
     white-space: nowrap;
+    /* Reserve space so active background doesn’t shift siblings */
+    text-align: center;
 }
 
 .pill:hover {
-    opacity: 0.8;
+    opacity: 0.75;
 }
 
 .pill.active {

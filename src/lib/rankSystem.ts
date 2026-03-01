@@ -74,33 +74,42 @@ export interface ScoreChange {
  * Calculate how many points each player gains/loses.
  *
  * Rules:
- * - Win vs HIGHER level (upset): +100 + levelDiff×50 (bonus for the upset)
- * - Win vs SAME level: +100 base
- * - Win vs LOWER level: max(20, 100 - levelDiff×20) — fewer points for beating a weaker player
+ * - Base: winner +100, loser -100
+ * - If winner's level < loser's level (upset win): bonus = levelDiff × 50 added to winner
+ * - If loser's level > winner's level (expected win): no bonus
+ * - Symmetric: if loser was HIGHER ranked → winner gains bonus, loser loses extra
+ * - If winner was HIGHER ranked → no bonus (expected outcome)
  *
- * Loss is always the mirror (negative) of whatever the winner gained.
+ * Penalty for loser:
+ * - If loser was HIGHER ranked (lost to a weaker player): extra penalty = levelDiff × 50
+ * - If loser was LOWER ranked (lost to a stronger player): no extra penalty
  */
 export function calculateScoreChange(winnerScore: number, loserScore: number): ScoreChange {
     const winnerLevel = getLevelFromScore(winnerScore);
     const loserLevel = getLevelFromScore(loserScore);
     const levelDiff = Math.abs(winnerLevel - loserLevel);
-
-    let winnerDelta: number;
+    const bonus = levelDiff * LEVEL_BONUS_PER_TIER;
 
     if (winnerLevel < loserLevel) {
-        // Upset: weaker player beat stronger — big bonus
-        winnerDelta = BASE_SCORE_CHANGE + levelDiff * LEVEL_BONUS_PER_TIER;
-    } else if (winnerLevel > loserLevel) {
-        // Expected win vs weaker — reduced reward, minimum 20 pts
-        winnerDelta = Math.max(20, BASE_SCORE_CHANGE - levelDiff * 20);
-    } else {
-        // Same level — base change
-        winnerDelta = BASE_SCORE_CHANGE;
+        // Upset: weaker player beat stronger player — bigger reward AND bigger loss
+        return {
+            winnerDelta: BASE_SCORE_CHANGE + bonus,
+            loserDelta: -(BASE_SCORE_CHANGE + bonus),
+        };
     }
 
+    if (winnerLevel > loserLevel) {
+        // Expected: stronger beat weaker — only base change
+        return {
+            winnerDelta: BASE_SCORE_CHANGE,
+            loserDelta: -BASE_SCORE_CHANGE,
+        };
+    }
+
+    // Same level — base change
     return {
-        winnerDelta,
-        loserDelta: -winnerDelta,
+        winnerDelta: BASE_SCORE_CHANGE,
+        loserDelta: -BASE_SCORE_CHANGE,
     };
 }
 
