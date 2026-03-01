@@ -19,8 +19,18 @@ export default function SettingsToolbar() {
 
     return (
         <header className="app-header" style={{ visibility: mounted ? 'visible' : 'hidden' }}>
-            {/* Left side: Logo & Title */}
-            {isHome && (
+            {/* Left side: Back Button + Logo & Title */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', pointerEvents: 'auto' }}>
+                {!isHome && (
+                    <button
+                        className="pill"
+                        onClick={() => router.push('/')}
+                        title={t('backHome')}
+                        style={{ padding: '0.4rem 0.8rem', background: 'var(--primary-color)', color: 'white' }}
+                    >
+                        🏠
+                    </button>
+                )}
                 <div
                     className="app-brand"
                     onClick={() => router.push('/')}
@@ -33,7 +43,7 @@ export default function SettingsToolbar() {
                         <span className="app-version">v0.1.0</span>
                     </div>
                 </div>
-            )}
+            </div>
 
             {/* Right side: Settings */}
             <div className="settings-toolbar">
