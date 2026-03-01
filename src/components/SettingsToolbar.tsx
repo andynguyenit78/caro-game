@@ -93,21 +93,21 @@ export default function SettingsToolbar() {
                         <div className="slider-bg" />
                         <button
                             className={`pill ${mode === 'light' ? 'active' : ''}`}
-                            onClick={() => setMode('light')}
+                            onClick={(e) => setMode('light', e)}
                             title={t('light')}
                         >
                             ☀️
                         </button>
                         <button
                             className={`pill ${mode === 'system' ? 'active' : ''}`}
-                            onClick={() => setMode('system')}
+                            onClick={(e) => setMode('system', e)}
                             title={t('system')}
                         >
                             💻
                         </button>
                         <button
                             className={`pill ${mode === 'dark' ? 'active' : ''}`}
-                            onClick={() => setMode('dark')}
+                            onClick={(e) => setMode('dark', e)}
                             title={t('dark')}
                         >
                             🌙
