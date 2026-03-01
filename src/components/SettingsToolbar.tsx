@@ -19,34 +19,25 @@ export default function SettingsToolbar() {
 
     return (
         <header className="app-header" style={{ visibility: mounted ? 'visible' : 'hidden' }}>
-            {/* Left side: Back Button + Logo & Title */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', pointerEvents: 'auto' }}>
-                {!isHome && (
-                    <button
-                        className="pill"
-                        onClick={() => router.push('/')}
-                        title={t('backHome')}
-                        style={{ padding: '0.4rem 0.8rem', background: 'var(--primary-color)', color: 'white' }}
-                    >
-                        🏠
-                    </button>
-                )}
-                <div
-                    className="app-brand"
-                    onClick={() => router.push('/')}
-                    title={t('backHome')}
-                    style={{ cursor: 'pointer' }}
-                >
-                    <div className="app-logo">⚔️</div>
-                    <div className="app-title-group">
-                        <h1 className="app-title">Caro Game</h1>
-                        <span className="app-version">v0.1.0</span>
-                    </div>
+            {/* Left side: Empty for balance */}
+            <div style={{ flex: 1 }}></div>
+
+            {/* Center: Logo & Title */}
+            <div
+                className="app-brand"
+                onClick={() => router.push('/')}
+                title={t('backHome')}
+                style={{ cursor: 'pointer', flex: 1, display: 'flex', justifyContent: 'center' }}
+            >
+                <div className="app-logo">⚔️</div>
+                <div className="app-title-group">
+                    <h1 className="app-title">Caro Game</h1>
+                    <span className="app-version">v0.1.0</span>
                 </div>
             </div>
 
             {/* Right side: Settings */}
-            <div className="settings-toolbar">
+            <div className="settings-toolbar" style={{ flex: 1, justifyContent: 'flex-end' }}>
                 {/* Profile Button */}
                 <button
                     className="pill profile-pill"
