@@ -22,8 +22,16 @@ function getSystemPref(): 'light' | 'dark' {
 }
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-    const [mode, setModeState] = useState<ThemeMode>(getInitialMode);
-    const [systemPreference, setSystemPreference] = useState<'light' | 'dark'>(getSystemPref);
+    const [mode, setModeState] = useState<ThemeMode>('system');
+    const [systemPreference, setSystemPreference] = useState<'light' | 'dark'>('light');
+    const [mounted, setMounted] = useState(false);
+
+    // Initialize from localStorage on client mount
+    useEffect(() => {
+        setModeState(getInitialMode());
+        setSystemPreference(getSystemPref());
+        setMounted(true);
+    }, []);
 
     // Listen to system preference changes
     useEffect(() => {
@@ -51,7 +59,9 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 
     return (
         <ThemeContext.Provider value={{ mode, setMode, resolvedTheme }}>
-            {children}
+            <div style={{ visibility: mounted ? 'visible' : 'hidden' }}>
+                {children}
+            </div>
         </ThemeContext.Provider>
     );
 }
