@@ -87,56 +87,34 @@ export default function Home() {
                         <p>{t('subtitle')}</p>
                     </div>
 
-                    {/* Stats Badge */}
-                    {isLoadingStats ? (
-                        <div className="stats-badge skeleton">
-                            <div className="stat-item" style={{ visibility: 'hidden' }}>
-                                <span className="stat-value">0</span>
+                    {/* Rank card + stats — always rendered, fade in when data loads */}
+                    <div
+                        style={{ opacity: isLoadingStats ? 0 : 1, transition: 'opacity 0.3s ease' }}
+                    >
+                        <div className="rank-card">
+                            <span className="rank-card-icon">{myRankIcon}</span>
+                            <div className="rank-card-info">
+                                <span className="rank-card-title">{myRank.title}</span>
+                                <span className="rank-card-score">{myScore} pts</span>
+                            </div>
+                        </div>
+                        <div className="stats-badge">
+                            <div className="stat-item">
+                                <span className="stat-value">{stats?.wins || 0}</span>
                                 <span className="stat-label">{t('wins')}</span>
                             </div>
-                            <div className="stat-divider" style={{ visibility: 'hidden' }} />
-                            <div className="stat-item" style={{ visibility: 'hidden' }}>
-                                <span className="stat-value">0</span>
+                            <div className="stat-divider" />
+                            <div className="stat-item">
+                                <span className="stat-value">{stats?.losses || 0}</span>
                                 <span className="stat-label">{t('losses')}</span>
                             </div>
-                            <div className="stat-divider" style={{ visibility: 'hidden' }} />
-                            <div className="stat-item" style={{ visibility: 'hidden' }}>
-                                <span className="stat-value">0%</span>
+                            <div className="stat-divider" />
+                            <div className="stat-item">
+                                <span className="stat-value">{winRate}%</span>
                                 <span className="stat-label">{t('winRate')}</span>
                             </div>
                         </div>
-                    ) : (
-                        stats && (
-                            <>
-                                {/* Rank card */}
-                                <div className="rank-card">
-                                    <span className="rank-card-icon">{myRankIcon}</span>
-                                    <div className="rank-card-info">
-                                        <span className="rank-card-title">{myRank.title}</span>
-                                        <span className="rank-card-score">
-                                            {myScore} pts • Lv.{myRank.level}
-                                        </span>
-                                    </div>
-                                </div>
-                                <div className="stats-badge">
-                                    <div className="stat-item">
-                                        <span className="stat-value">{stats.wins || 0}</span>
-                                        <span className="stat-label">{t('wins')}</span>
-                                    </div>
-                                    <div className="stat-divider" />
-                                    <div className="stat-item">
-                                        <span className="stat-value">{stats.losses || 0}</span>
-                                        <span className="stat-label">{t('losses')}</span>
-                                    </div>
-                                    <div className="stat-divider" />
-                                    <div className="stat-item">
-                                        <span className="stat-value">{winRate}%</span>
-                                        <span className="stat-label">{t('winRate')}</span>
-                                    </div>
-                                </div>
-                            </>
-                        )
-                    )}
+                    </div>
 
                     <div
                         style={{
@@ -262,7 +240,7 @@ export default function Home() {
                                           )}
                                           <span className="lb-name">{entry.name}</span>
                                           <span className="lb-rank-badge" title={entry.rankTitle}>
-                                              {getRankIcon(entry.score)} Lv.{entry.level}
+                                              {getRankIcon(entry.score)} {entry.rankTitle}
                                           </span>
                                           <span className="lb-score">{entry.score} pts</span>
                                       </div>
