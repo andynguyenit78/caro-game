@@ -58,8 +58,17 @@ export const translations = {
         // Onboarding & Leaderboard
         welcomeTitle: 'Welcome to Caro!',
         welcomeSubtitle: 'Enter your name to get started',
-        letsPlay: "Let's Play! 🎮",
+        letsPlay: "Let's Play! \uD83C\uDFAE",
         leaderboard: 'Top Players',
+
+        // Profile
+        profile: 'Profile',
+        backHome: 'Back',
+        chooseAvatar: 'Choose Avatar',
+        displayName: 'Display Name',
+        gamesPlayed: 'Games',
+        saved: 'Saved!',
+        saveProfile: 'Save Profile',
     },
     vi: {
         // Home / Lobby
@@ -120,6 +129,15 @@ export const translations = {
         welcomeSubtitle: 'Nhập tên của bạn để bắt đầu',
         letsPlay: 'Chơi thôi! 🎮',
         leaderboard: 'Bảng Xếp Hạng',
+
+        // Profile
+        profile: 'Hồ sơ',
+        backHome: 'Quay lại',
+        chooseAvatar: 'Chọn Avatar',
+        displayName: 'Tên hiển thị',
+        gamesPlayed: 'Trận',
+        saved: 'Đã lưu!',
+        saveProfile: 'Lưu hồ sơ',
     },
 } as const;
 

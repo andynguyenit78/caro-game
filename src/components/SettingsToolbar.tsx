@@ -1,14 +1,25 @@
 'use client';
 import React from 'react';
+import { useRouter } from 'next/navigation';
 import { useLanguage } from '../context/LanguageContext';
 import { useTheme } from '../context/ThemeContext';
 
 export default function SettingsToolbar() {
     const { language, setLanguage, t } = useLanguage();
     const { mode, setMode } = useTheme();
+    const router = useRouter();
 
     return (
         <div className="settings-toolbar">
+            {/* Profile Button */}
+            <button
+                className="pill profile-pill"
+                onClick={() => router.push('/profile')}
+                title={t('profile')}
+            >
+                👤
+            </button>
+
             {/* Language Toggle */}
             <div className="settings-group">
                 <div className="toggle-pills">

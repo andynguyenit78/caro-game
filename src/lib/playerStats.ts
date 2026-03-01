@@ -3,6 +3,7 @@ import { db } from './firebase';
 
 export interface PlayerStats {
     name: string;
+    avatar: string;
     wins: number;
     losses: number;
     gamesPlayed: number;
@@ -10,6 +11,7 @@ export interface PlayerStats {
 
 const defaultStats: PlayerStats = {
     name: '',
+    avatar: '',
     wins: 0,
     losses: 0,
     gamesPlayed: 0,
@@ -40,6 +42,16 @@ export async function getOrCreateProfile(userId: string): Promise<PlayerStats> {
  */
 export async function updatePlayerName(userId: string, name: string) {
     await update(ref(db, `users/${userId}`), { name });
+}
+
+/**
+ * Update user avatar in Firebase
+ */
+export async function updatePlayerAvatar(userId: string, avatar: string) {
+    await update(ref(db, `users/${userId}`), { avatar });
+    if (typeof window !== 'undefined') {
+        localStorage.setItem('caroPlayerAvatar', avatar);
+    }
 }
 
 /**
@@ -105,6 +117,7 @@ export function subscribeToStats(userId: string, callback: (stats: PlayerStats) 
 export interface LeaderboardEntry {
     userId: string;
     name: string;
+    avatar: string;
     wins: number;
     losses: number;
     gamesPlayed: number;
@@ -127,6 +140,7 @@ export async function fetchLeaderboard(limit = 10): Promise<LeaderboardEntry[]> 
         entries.push({
             userId,
             name: d.name,
+            avatar: d.avatar || '',
             wins: d.wins || 0,
             losses: d.losses || 0,
             gamesPlayed: d.gamesPlayed,

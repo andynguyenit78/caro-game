@@ -135,6 +135,7 @@ export default function Home() {
                   <span className="lb-rank">
                     {index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : `#${index + 1}`}
                   </span>
+                  {entry.avatar && <span className="lb-avatar">{entry.avatar}</span>}
                   <span className="lb-name">{entry.name}</span>
                   <span className="lb-stats">
                     {entry.wins}W {entry.losses}L
