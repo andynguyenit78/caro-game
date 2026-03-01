@@ -1,11 +1,6 @@
 import { ref, get, update, onValue } from 'firebase/database';
 import { db } from './firebase';
-import {
-    calculateScoreChange,
-    applyScoreFloor,
-    getRankFromScore,
-    getLevelFromScore,
-} from './rankSystem';
+import { calculateScoreChange, applyScoreFloor, getRankFromScore } from './rankSystem';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 

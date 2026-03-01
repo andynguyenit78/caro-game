@@ -1,6 +1,6 @@
 'use client';
 import React from 'react';
-import { useRouter, usePathname } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { useLanguage } from '../context/LanguageContext';
 import { useTheme } from '../context/ThemeContext';
 
@@ -8,14 +8,11 @@ export default function SettingsToolbar() {
     const { language, setLanguage, t } = useLanguage();
     const { mode, setMode } = useTheme();
     const router = useRouter();
-    const pathname = usePathname();
     const [mounted, setMounted] = React.useState(false);
 
     React.useEffect(() => {
         setMounted(true);
     }, []);
-
-    const isHome = pathname === '/';
 
     return (
         <header className="app-header" style={{ visibility: mounted ? 'visible' : 'hidden' }}>

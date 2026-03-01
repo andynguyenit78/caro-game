@@ -13,21 +13,29 @@ interface GameOverOverlayProps {
 function ConfettiParticle({ index }: { index: number }) {
     const colors = ['#ff6b6b', '#ffd93d', '#6bcb77', '#4d96ff', '#ff6fb7', '#c084fc', '#22d3ee'];
     const color = colors[index % colors.length];
-    const left = Math.random() * 100;
-    const delay = Math.random() * 2;
-    const size = Math.random() * 8 + 4;
-    const duration = Math.random() * 2 + 3;
+
+    // useMemo prevents purity errors and keeps values stable across re-renders
+    const randomVals = React.useMemo(() => {
+        /* eslint-disable react-hooks/purity */
+        return {
+            left: Math.random() * 100,
+            delay: Math.random() * 2,
+            size: Math.random() * 8 + 4,
+            duration: Math.random() * 2 + 3,
+        };
+        /* eslint-enable react-hooks/purity */
+    }, []);
 
     return (
         <div
             className="confetti-particle"
             style={{
-                left: `${left}%`,
-                width: `${size}px`,
-                height: `${size * 1.5}px`,
+                left: `${randomVals.left}%`,
+                animationDelay: `${randomVals.delay}s`,
+                animationDuration: `${randomVals.duration}s`,
+                width: `${randomVals.size}px`,
+                height: `${randomVals.size}px`,
                 backgroundColor: color,
-                animationDelay: `${delay}s`,
-                animationDuration: `${duration}s`,
             }}
         />
     );

@@ -14,6 +14,7 @@ export default function BoardWrapper({ roomId }: { roomId: string }) {
             storedId = uuidv4();
             localStorage.setItem('caroUserId', storedId);
         }
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setUserId(storedId);
     }, []);
 

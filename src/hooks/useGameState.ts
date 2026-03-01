@@ -102,6 +102,7 @@ export function useGameState(roomId: string, userId: string) {
         });
 
         return () => unsubscribe();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [roomId, userId]);
 
     /**

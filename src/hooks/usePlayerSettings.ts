@@ -1,5 +1,5 @@
 'use client';
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback } from 'react';
 
 export const TIMER_OPTIONS = [15, 30, 60, 90] as const;
 export type TimerOption = (typeof TIMER_OPTIONS)[number];
@@ -20,14 +20,10 @@ function getInitialTimerSeconds(): TimerOption {
 }
 
 export function usePlayerSettings() {
-    const [soundEnabled, setSoundEnabledState] = useState<boolean>(true);
-    const [timerSeconds, setTimerSecondsState] = useState<TimerOption>(DEFAULT_TIMER_SECONDS);
-
-    // Initialize from localStorage on mount
-    useEffect(() => {
-        setSoundEnabledState(getInitialSoundEnabled());
-        setTimerSecondsState(getInitialTimerSeconds());
-    }, []);
+    const [soundEnabled, setSoundEnabledState] = useState<boolean>(() => getInitialSoundEnabled());
+    const [timerSeconds, setTimerSecondsState] = useState<TimerOption>(() =>
+        getInitialTimerSeconds()
+    );
 
     const setSoundEnabled = useCallback((enabled: boolean) => {
         setSoundEnabledState(enabled);

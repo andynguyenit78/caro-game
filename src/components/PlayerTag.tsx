@@ -1,7 +1,7 @@
 'use client';
 import React from 'react';
 import { PlayerStats } from '../lib/playerStats';
-import { getRankFromScore, getRankIcon, getRankTitle } from '../lib/rankSystem';
+import { getRankIcon, getRankTitle } from '../lib/rankSystem';
 import { useLanguage } from '../context/LanguageContext';
 
 interface PlayerTagProps {
@@ -31,7 +31,6 @@ export default function PlayerTag({
     const { language } = useLanguage();
     const roleColorClass = role === 'X' ? 'icon-x' : 'icon-o';
     const score = stats?.score ?? 0;
-    const rank = getRankFromScore(score);
     const rankIcon = getRankIcon(score);
     const rankTitle = getRankTitle(score, language);
 

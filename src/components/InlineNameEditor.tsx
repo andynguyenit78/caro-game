@@ -1,5 +1,5 @@
 'use client';
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback } from 'react';
 import { useLanguage } from '../context/LanguageContext';
 import { updatePlayerName } from '../lib/playerStats';
 

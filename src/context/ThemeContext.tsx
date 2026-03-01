@@ -27,15 +27,19 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     const [mounted, setMounted] = useState(false);
 
     // Initialize from localStorage on client mount
+    // Initialize from localStorage on client mount
     useEffect(() => {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setModeState(getInitialMode());
         setSystemPreference(getSystemPref());
         setMounted(true);
     }, []);
 
     // Listen to system preference changes
+    // Listen to system preference changes
     useEffect(() => {
         const mq = window.matchMedia('(prefers-color-scheme: dark)');
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setSystemPreference(mq.matches ? 'dark' : 'light');
 
         const handler = (e: MediaQueryListEvent) => {

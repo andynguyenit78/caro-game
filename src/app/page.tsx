@@ -66,7 +66,6 @@ export default function Home() {
     const winRate =
         stats && stats.gamesPlayed > 0 ? Math.round((stats.wins / stats.gamesPlayed) * 100) : 0;
     const myScore = stats?.score ?? 0;
-    const myRank = getRankFromScore(myScore);
     const myRankIcon = getRankIcon(myScore);
     const myRankTitle = getRankTitle(myScore, language);
 

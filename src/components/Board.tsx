@@ -54,6 +54,7 @@ export default function Board({ roomId, userId }: { roomId: string; userId: stri
 
     /** Load persisted player name on mount. */
     useEffect(() => {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setPlayerName(localStorage.getItem('caroPlayerName') || '');
     }, []);
 
@@ -86,6 +87,7 @@ export default function Board({ roomId, userId }: { roomId: string; userId: stri
     /** Countdown timer — resets on each turn change, reads duration from Firebase. */
     useEffect(() => {
         if (gameState.status !== 'playing') {
+            // eslint-disable-next-line react-hooks/set-state-in-effect
             setTimeLeft(timerDuration);
             return;
         }

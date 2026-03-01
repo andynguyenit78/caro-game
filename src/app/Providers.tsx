@@ -11,6 +11,7 @@ export default function Providers({ children }: { children: React.ReactNode }) {
 
     useEffect(() => {
         const name = localStorage.getItem('caroPlayerName');
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setNeedsName(!name);
         setChecked(true);
     }, []);

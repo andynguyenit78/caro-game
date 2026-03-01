@@ -24,6 +24,7 @@ export default function AIBoard() {
 
     /** Load localStorage values on mount (client-only, safe for SSR). */
     useEffect(() => {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setPlayerName(localStorage.getItem('caroPlayerName') || '');
         setUserId(localStorage.getItem('caroUserId') || '');
     }, []);
