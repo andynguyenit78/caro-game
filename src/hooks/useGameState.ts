@@ -12,6 +12,7 @@ export interface GameState {
         X?: string;
         O?: string;
     };
+    lastMove?: [number, number] | null;
 }
 
 const createDefaultState = (): GameState => ({
@@ -114,6 +115,7 @@ export function useGameState(roomId: string, userId: string) {
             currentPlayer: isWin ? gameState.currentPlayer : nextPlayer,
             winner: isWin ? myPlayerRole : '',
             status: isWin ? 'finished' : 'playing',
+            lastMove: [row, col],
         };
 
         await update(ref(db, `games/${roomId}`), updates);
@@ -127,6 +129,7 @@ export function useGameState(roomId: string, userId: string) {
             currentPlayer: 'X',
             winner: '',
             status: 'playing',
+            lastMove: null,
         };
 
         await update(ref(db, `games/${roomId}`), updates);
@@ -139,5 +142,6 @@ export function useGameState(roomId: string, userId: string) {
         joinGame,
         resetGame,
         isMyTurn: gameState.currentPlayer === myPlayerRole,
+        lastMove: gameState.lastMove || null,
     };
 }

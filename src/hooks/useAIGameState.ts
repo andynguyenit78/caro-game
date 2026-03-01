@@ -10,19 +10,23 @@ interface AIGameState {
     currentTurn: Player;
     winner: Player;
     status: GameStatus;
+    lastMove: [number, number] | null;
+    aiThinking: boolean;
 }
 
 export function useAIGameState() {
     const [gameState, setGameState] = useState<AIGameState>({
         board: createEmptyBoard(),
-        currentTurn: 'X', // Human is always X, goes first
+        currentTurn: 'X',
         winner: '',
         status: 'playing',
+        lastMove: null,
+        aiThinking: false,
     });
 
     const makeMove = useCallback((row: number, col: number) => {
         setGameState(prev => {
-            if (prev.status !== 'playing' || prev.currentTurn !== 'X') return prev;
+            if (prev.status !== 'playing' || prev.currentTurn !== 'X' || prev.aiThinking) return prev;
             if (prev.board[row][col] !== '') return prev;
 
             // Human moves
@@ -31,33 +35,56 @@ export function useAIGameState() {
 
             if (checkWin(newBoard, row, col, 'X')) {
                 return {
+                    ...prev,
                     board: newBoard,
                     currentTurn: '' as Player,
                     winner: 'X' as Player,
-                    status: 'finished',
+                    status: 'finished' as GameStatus,
+                    lastMove: [row, col] as [number, number],
+                    aiThinking: false,
                 };
             }
 
-            // AI moves
-            const [aiRow, aiCol] = findBestMove(newBoard, 'O');
-            newBoard[aiRow][aiCol] = 'O';
-
-            if (checkWin(newBoard, aiRow, aiCol, 'O')) {
-                return {
-                    board: newBoard,
-                    currentTurn: '' as Player,
-                    winner: 'O' as Player,
-                    status: 'finished',
-                };
-            }
-
+            // Set AI thinking state
             return {
+                ...prev,
                 board: newBoard,
-                currentTurn: 'X' as Player,
-                winner: '' as Player,
-                status: 'playing',
+                currentTurn: 'O' as Player,
+                lastMove: [row, col] as [number, number],
+                aiThinking: true,
             };
         });
+
+        // Delayed AI response
+        setTimeout(() => {
+            setGameState(prev => {
+                if (!prev.aiThinking || prev.status !== 'playing') return prev;
+
+                const newBoard = prev.board.map(r => [...r]);
+                const [aiRow, aiCol] = findBestMove(newBoard, 'O');
+                newBoard[aiRow][aiCol] = 'O';
+
+                if (checkWin(newBoard, aiRow, aiCol, 'O')) {
+                    return {
+                        ...prev,
+                        board: newBoard,
+                        currentTurn: '' as Player,
+                        winner: 'O' as Player,
+                        status: 'finished' as GameStatus,
+                        lastMove: [aiRow, aiCol] as [number, number],
+                        aiThinking: false,
+                    };
+                }
+
+                return {
+                    ...prev,
+                    board: newBoard,
+                    currentTurn: 'X' as Player,
+                    lastMove: [aiRow, aiCol] as [number, number],
+                    aiThinking: false,
+                };
+            });
+        }, 400);
     }, []);
 
     const resetGame = useCallback(() => {
@@ -66,6 +93,8 @@ export function useAIGameState() {
             currentTurn: 'X',
             winner: '',
             status: 'playing',
+            lastMove: null,
+            aiThinking: false,
         });
     }, []);
 

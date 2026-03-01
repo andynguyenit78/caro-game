@@ -1,20 +1,80 @@
 'use client';
-import React, { useEffect } from 'react';
+import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { useGameState } from '../hooks/useGameState';
 import { IconX, IconO } from './Icons';
 import GameOverOverlay from './GameOverOverlay';
 import { useLanguage } from '../context/LanguageContext';
+import { Player } from '../lib/gameLogic';
+import { playMoveSound, playVictorySound, playDefeatSound } from '../lib/sounds';
+
+const MOVE_TIMER_SECONDS = 30;
 
 export default function Board({ roomId, userId }: { roomId: string, userId: string }) {
-    const { gameState, myPlayerRole, makeMove, joinGame, resetGame, isMyTurn } = useGameState(roomId, userId);
+    const { gameState, myPlayerRole, makeMove, joinGame, resetGame, isMyTurn, lastMove } = useGameState(roomId, userId);
     const { t } = useLanguage();
+    const [playerName, setPlayerName] = useState('');
+    const [editingName, setEditingName] = useState(false);
+    const [nameInput, setNameInput] = useState('');
+    const [timeLeft, setTimeLeft] = useState(MOVE_TIMER_SECONDS);
+    const prevBoardRef = useRef<string>('');
+    const prevWinnerRef = useRef<string>('');
 
-    // Auto-join the game if it is waiting and we are visiting the room
+    // Load player name
+    useEffect(() => {
+        const saved = localStorage.getItem('caroPlayerName') || '';
+        setPlayerName(saved);
+    }, []);
+
+    // Sound on move
+    useEffect(() => {
+        const boardStr = JSON.stringify(gameState.board);
+        if (prevBoardRef.current && prevBoardRef.current !== boardStr && gameState.status !== 'loading') {
+            playMoveSound();
+        }
+        prevBoardRef.current = boardStr;
+    }, [gameState.board, gameState.status]);
+
+    // Sound on win/lose
+    useEffect(() => {
+        if (gameState.winner && gameState.winner !== prevWinnerRef.current) {
+            if (gameState.winner === myPlayerRole) {
+                playVictorySound();
+            } else if (myPlayerRole) {
+                playDefeatSound();
+            }
+        }
+        prevWinnerRef.current = gameState.winner;
+    }, [gameState.winner, myPlayerRole]);
+
+    // Move timer
+    useEffect(() => {
+        if (gameState.status !== 'playing') {
+            setTimeLeft(MOVE_TIMER_SECONDS);
+            return;
+        }
+        setTimeLeft(MOVE_TIMER_SECONDS);
+        const interval = setInterval(() => {
+            setTimeLeft(prev => {
+                if (prev <= 1) return MOVE_TIMER_SECONDS;
+                return prev - 1;
+            });
+        }, 1000);
+        return () => clearInterval(interval);
+    }, [gameState.status, gameState.currentPlayer]);
+
+    // Auto-join
     useEffect(() => {
         if (gameState && gameState.status === 'waiting' && myPlayerRole === '') {
             joinGame();
         }
     }, [gameState, myPlayerRole, joinGame]);
+
+    const saveName = useCallback(() => {
+        const trimmed = nameInput.trim();
+        setPlayerName(trimmed);
+        localStorage.setItem('caroPlayerName', trimmed);
+        setEditingName(false);
+    }, [nameInput]);
 
     if (!gameState || gameState.status === 'loading') {
         return <div className="glass" style={{ padding: '2rem' }}>{t('loadingGame')}</div>;
@@ -32,7 +92,6 @@ export default function Board({ roomId, userId }: { roomId: string, userId: stri
             if (gameState.winner === myPlayerRole) return t('youWon');
             return t('youLost');
         }
-
         return isMyTurn ? t('yourTurn') : t('opponentTurn');
     };
 
@@ -42,22 +101,52 @@ export default function Board({ roomId, userId }: { roomId: string, userId: stri
         alert(t('inviteCopied'));
     };
 
+    const timerDanger = timeLeft <= 10;
+
     return (
         <div className="board-container">
             <div className="dashboard glass">
                 <div className="status-badge" style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: '0.2rem' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
                         <span>{t('role')}:</span>
                         {myPlayerRole ? (
                             <span className={myPlayerRole === 'X' ? 'icon-x' : 'icon-o'} style={{ fontWeight: 'bold' }}>
                                 {myPlayerRole}
                             </span>
                         ) : t('spectator')}
+                        {playerName && <span style={{ opacity: 0.6, fontSize: '0.85rem' }}>({playerName})</span>}
+                        {!editingName && (
+                            <button className="name-edit-btn" onClick={() => { setNameInput(playerName); setEditingName(true); }} title={t('editName')}>
+                                ✏️
+                            </button>
+                        )}
                     </div>
+                    {editingName && (
+                        <div style={{ display: 'flex', gap: '0.3rem', marginTop: '0.3rem' }}>
+                            <input
+                                className="name-input"
+                                type="text"
+                                value={nameInput}
+                                onChange={e => setNameInput(e.target.value)}
+                                placeholder={t('enterName')}
+                                maxLength={20}
+                                autoFocus
+                                onKeyDown={e => e.key === 'Enter' && saveName()}
+                            />
+                            <button className="btn-primary" style={{ padding: '0.3rem 0.6rem', fontSize: '0.75rem' }} onClick={saveName}>
+                                ✓
+                            </button>
+                        </div>
+                    )}
                     <div>{getStatusMessage()}</div>
                 </div>
 
-                <div style={{ display: 'flex', gap: '1rem' }}>
+                <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+                    {gameState.status === 'playing' && (
+                        <div className={`timer ${timerDanger ? 'timer-danger' : ''}`}>
+                            ⏱ {timeLeft}s
+                        </div>
+                    )}
                     {gameState.status === 'waiting' && (
                         <button className="btn-primary" onClick={copyInviteLink}>
                             {t('copyInvite')}
@@ -74,17 +163,20 @@ export default function Board({ roomId, userId }: { roomId: string, userId: stri
                     pointerEvents: (gameState.status !== 'playing' || !isMyTurn) ? 'none' : 'auto'
                 }}
             >
-                {gameState.board.map((row: import('../lib/gameLogic').Player[], rowIndex: number) => (
-                    row.map((cell: import('../lib/gameLogic').Player, colIndex: number) => (
-                        <div
-                            key={`${rowIndex}-${colIndex}`}
-                            className="cell"
-                            onClick={() => handleCellClick(rowIndex, colIndex)}
-                        >
-                            {cell === 'X' && <IconX className="cell-icon icon-x" />}
-                            {cell === 'O' && <IconO className="cell-icon icon-o" />}
-                        </div>
-                    ))
+                {gameState.board.map((row: Player[], rowIndex: number) => (
+                    row.map((cell: Player, colIndex: number) => {
+                        const isLastMove = lastMove && lastMove[0] === rowIndex && lastMove[1] === colIndex;
+                        return (
+                            <div
+                                key={`${rowIndex}-${colIndex}`}
+                                className={`cell ${isLastMove ? 'cell-last-move' : ''}`}
+                                onClick={() => handleCellClick(rowIndex, colIndex)}
+                            >
+                                {cell === 'X' && <IconX className="cell-icon icon-x" />}
+                                {cell === 'O' && <IconO className="cell-icon icon-o" />}
+                            </div>
+                        );
+                    })
                 ))}
             </div>
             {gameState.status === 'finished' && myPlayerRole && (

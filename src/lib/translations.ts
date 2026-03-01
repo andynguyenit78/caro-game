@@ -43,6 +43,10 @@ export const translations = {
         aiThinking: 'AI is thinking...',
         newGame: 'New Game',
         playFriend: 'Play with Friend',
+
+        // Player
+        editName: 'Edit Name',
+        enterName: 'Your name',
     },
     vi: {
         // Home / Lobby
@@ -86,6 +90,10 @@ export const translations = {
         aiThinking: 'AI đang suy nghĩ...',
         newGame: 'Ván Mới',
         playFriend: 'Chơi với bạn bè',
+
+        // Player
+        editName: 'Đổi tên',
+        enterName: 'Tên của bạn',
     },
 } as const;
 
