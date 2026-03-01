@@ -5,7 +5,7 @@ import { useState, useEffect } from 'react';
 import { useLanguage } from '../context/LanguageContext';
 import {
     subscribeToStats,
-    fetchLeaderboard,
+    subscribeToLeaderboard,
     PlayerStats,
     LeaderboardEntry,
 } from '../lib/playerStats';
@@ -29,19 +29,22 @@ export default function Home() {
             localStorage.setItem('caroUserId', userId);
         }
 
-        // Subscribe to own stats
-        const unsub = subscribeToStats(userId, (s) => {
+        // Subscribe to own stats (real-time)
+        const unsubStats = subscribeToStats(userId, (s) => {
             setStats(s);
             setIsLoadingStats(false);
         });
 
-        // Fetch leaderboard
-        fetchLeaderboard(10).then((data) => {
+        // Subscribe to leaderboard (real-time — updates whenever any score changes)
+        const unsubLb = subscribeToLeaderboard((data) => {
             setLeaderboard(data);
             setIsLoadingLeaderboard(false);
-        });
+        }, 10);
 
-        return () => unsub();
+        return () => {
+            unsubStats();
+            unsubLb();
+        };
     }, []);
 
     const createGame = () => {

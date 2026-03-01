@@ -163,17 +163,11 @@ export interface LeaderboardEntry {
     rankTitle: string;
 }
 
-/**
- * Fetch top players sorted by score (primary) then win rate (tiebreak).
- */
-export async function fetchLeaderboard(limit = 10): Promise<LeaderboardEntry[]> {
-    const snapshot = await get(ref(db, 'users'));
-    if (!snapshot.exists()) return [];
-
-    const users = snapshot.val();
+/** Shared helper: convert raw Firebase user map → sorted LeaderboardEntry array. */
+function buildLeaderboard(usersVal: Record<string, unknown>, limit: number): LeaderboardEntry[] {
     const entries: LeaderboardEntry[] = [];
 
-    for (const [userId, data] of Object.entries(users)) {
+    for (const [userId, data] of Object.entries(usersVal)) {
         const d = data as PlayerStats;
         if (!d.name || !d.gamesPlayed || d.gamesPlayed < 1) continue;
 
@@ -201,4 +195,33 @@ export async function fetchLeaderboard(limit = 10): Promise<LeaderboardEntry[]> 
     });
 
     return entries.slice(0, limit);
+}
+
+/**
+ * Subscribe to real-time leaderboard updates via Firebase `onValue`.
+ * Fires immediately with current data, then on every score change.
+ * Returns an unsubscribe function.
+ */
+export function subscribeToLeaderboard(
+    callback: (entries: LeaderboardEntry[]) => void,
+    limit = 10
+): () => void {
+    const usersRef = ref(db, 'users');
+    return onValue(usersRef, (snapshot) => {
+        if (!snapshot.exists()) {
+            callback([]);
+            return;
+        }
+        callback(buildLeaderboard(snapshot.val(), limit));
+    });
+}
+
+/**
+ * One-time fetch of top players sorted by score.
+ * Prefer `subscribeToLeaderboard` for live pages.
+ */
+export async function fetchLeaderboard(limit = 10): Promise<LeaderboardEntry[]> {
+    const snapshot = await get(ref(db, 'users'));
+    if (!snapshot.exists()) return [];
+    return buildLeaderboard(snapshot.val(), limit);
 }
