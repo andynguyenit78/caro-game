@@ -597,7 +597,7 @@ button {
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
     border: 1px solid var(--glass-border);
-    border-radius: 20px;
+    border-radius: 22px;
     padding: 3px;
     gap: 2px;
     isolation: isolate;
@@ -612,7 +612,7 @@ button {
     /* Slider width: (total width - all gaps - padding left/right) / num-pills */
     width: calc((100% - 6px - ((var(--num-pills) - 1) * 2px)) / var(--num-pills));
     left: 3px;
-    border-radius: 16px;
+    border-radius: 18px;
     background: var(--text-color);
     z-index: -1;
     /* Spring physics: Slide & Fade with Elastic overshoot */
@@ -632,9 +632,9 @@ button {
     z-index: 1;
     cursor: pointer;
     box-sizing: border-box;
-    padding: 0.3rem 0.6rem;
-    border-radius: 16px;
-    font-size: 0.75rem;
+    padding: 0.4rem 0.8rem;
+    border-radius: 18px;
+    font-size: 0.95rem;
     /* Keep font-weight constant — prevents width shift when toggling active */
     font-weight: 600;
     color: var(--text-color);
