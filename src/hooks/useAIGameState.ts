@@ -2,6 +2,7 @@
 import { useState, useCallback, useEffect } from 'react';
 import { BoardState, Player, createEmptyBoard, checkWin } from '../lib/gameLogic';
 import { findBestMove } from '../lib/caroAI';
+import { subscribeToStats, PlayerStats } from '../lib/playerStats';
 
 export type GameStatus = 'playing' | 'finished';
 
@@ -98,16 +99,13 @@ export function useAIGameState() {
         });
     }, []);
 
-    const [playerStats, setPlayerStats] = useState<any>(null);
+    const [playerStats, setPlayerStats] = useState<PlayerStats | null>(null);
     useEffect(() => {
         const userId = localStorage.getItem('caroUserId');
         if (!userId) return;
 
-        const { ref, onValue } = require('firebase/database');
-        const { db } = require('../lib/firebase');
-
-        const unsub = onValue(ref(db, `users/${userId}`), (snap: any) => {
-            setPlayerStats(snap.val());
+        const unsub = subscribeToStats(userId, (stats: PlayerStats) => {
+            setPlayerStats(stats);
         });
 
         return () => unsub();

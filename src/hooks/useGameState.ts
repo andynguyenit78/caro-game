@@ -1,24 +1,7 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
-import { ref, onValue, set, update, get } from 'firebase/database';
-import { db } from '../lib/firebase';
-import { BoardState, Player, createEmptyBoard, checkWin } from '../lib/gameLogic';
-import { recordGameResult, updatePlayerName, getPlayerName } from '../lib/playerStats';
-
-export interface GameState {
-    board: BoardState;
-    currentPlayer: Player;
-    winner: Player | '';
-    status: 'loading' | 'waiting' | 'playing' | 'finished';
-    players: {
-        X?: string;
-        O?: string;
-    };
-    playerNames?: {
-        X?: string;
-        O?: string;
-    };
-    lastMove?: [number, number] | null;
-}
+import { Player, createEmptyBoard, checkWin } from '../lib/gameLogic';
+import { recordGameResult, updatePlayerName } from '../lib/playerStats';
+import { GameState, subscribeToGame, subscribeToPlayer, setGameState, updateGameState } from '../lib/gameService';
 
 const createDefaultState = (): GameState => ({
     board: createEmptyBoard(15),
@@ -29,7 +12,7 @@ const createDefaultState = (): GameState => ({
 });
 
 export function useGameState(roomId: string, userId: string) {
-    const [gameState, setGameState] = useState<GameState>(createDefaultState);
+    const [gameState, setGameStateLocal] = useState<GameState>(createDefaultState);
     const [myPlayerRole, setMyPlayerRole] = useState<Player>('');
     const [opponentName, setOpponentName] = useState('');
     const hasInitialized = useRef(false);
@@ -46,20 +29,18 @@ export function useGameState(roomId: string, userId: string) {
         // Reset on roomId change
         hasInitialized.current = false;
         hasRecordedResult.current = false;
-        setMyPlayerRole('');
-        setOpponentName('');
-        setGameState(createDefaultState());
+        setTimeout(() => {
+            setMyPlayerRole('');
+            setOpponentName('');
+            setGameStateLocal(createDefaultState());
+        }, 0);
 
-        const gameRef = ref(db, `games/${roomId}`);
-
-        const unsubscribe = onValue(gameRef, (snapshot) => {
-            const data = snapshot.val();
-
+        const unsubscribe = subscribeToGame(roomId, (data) => {
             if (data) {
                 if (!data.board) {
                     data.board = createEmptyBoard(15);
                 }
-                setGameState(data as GameState);
+                setGameStateLocal(data as GameState);
 
                 // Determine our role
                 if (data.players?.X === userId) {
@@ -89,7 +70,7 @@ export function useGameState(roomId: string, userId: string) {
                     players: { X: userId },
                     playerNames: { X: localName },
                 };
-                set(gameRef, newState);
+                setGameState(roomId, newState).catch(console.error);
                 // Also update profile name
                 if (localName) updatePlayerName(userId, localName);
             }
@@ -127,7 +108,7 @@ export function useGameState(roomId: string, userId: string) {
                 'status': 'playing',
                 'playerNames/O': localName,
             };
-            await update(ref(db, `games/${roomId}`), updates);
+            await updateGameState(roomId, updates);
             if (localName) updatePlayerName(userId, localName);
         }
     }, [roomId, userId, gameState, myPlayerRole]);
@@ -156,7 +137,7 @@ export function useGameState(roomId: string, userId: string) {
             lastMove: [row, col],
         };
 
-        await update(ref(db, `games/${roomId}`), updates);
+        await updateGameState(roomId, updates);
     }, [roomId, gameState, myPlayerRole]);
 
     const resetGame = useCallback(async () => {
@@ -171,26 +152,26 @@ export function useGameState(roomId: string, userId: string) {
             lastMove: null,
         };
 
-        await update(ref(db, `games/${roomId}`), updates);
+        await updateGameState(roomId, updates);
     }, [roomId, myPlayerRole]);
 
     // Fetch stats for both players
-    const [playersStats, setPlayersStats] = useState<{ X: any, O: any }>({ X: null, O: null });
+    const [playersStats, setPlayersStats] = useState<{ X: Record<string, unknown> | null, O: Record<string, unknown> | null }>({ X: null, O: null });
 
     useEffect(() => {
         if (!gameState.players.X && !gameState.players.O) return;
 
-        let unsubX: () => void;
-        let unsubO: () => void;
+        let unsubX: (() => void) | undefined;
+        let unsubO: (() => void) | undefined;
 
         if (gameState.players.X) {
-            unsubX = onValue(ref(db, `users/${gameState.players.X}`), snap => {
-                setPlayersStats(prev => ({ ...prev, X: snap.val() }));
+            unsubX = subscribeToPlayer(gameState.players.X, data => {
+                setPlayersStats(prev => ({ ...prev, X: data }));
             });
         }
         if (gameState.players.O) {
-            unsubO = onValue(ref(db, `users/${gameState.players.O}`), snap => {
-                setPlayersStats(prev => ({ ...prev, O: snap.val() }));
+            unsubO = subscribeToPlayer(gameState.players.O, data => {
+                setPlayersStats(prev => ({ ...prev, O: data }));
             });
         }
 

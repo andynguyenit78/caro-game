@@ -11,7 +11,7 @@ import { updatePlayerName } from '../lib/playerStats';
 const MOVE_TIMER_SECONDS = 30;
 
 export default function Board({ roomId, userId }: { roomId: string, userId: string }) {
-    const { gameState, myPlayerRole, opponentName, playersStats, makeMove, joinGame, resetGame, isMyTurn, lastMove } = useGameState(roomId, userId);
+    const { gameState, myPlayerRole, opponentName, playersStats, makeMove, joinGame, resetGame, isMyTurn, lastMove } = useGameState(roomId, userId) as any;
     const { t } = useLanguage();
     const [playerName, setPlayerName] = useState('');
     const [editingName, setEditingName] = useState(false);
