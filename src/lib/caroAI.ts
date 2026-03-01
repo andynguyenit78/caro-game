@@ -208,7 +208,7 @@ function isWinningMove(board: BoardState, row: number, col: number, player: Play
     board[row][col] = player;
     const wins = checkWin(board, row, col, player);
     board[row][col] = '';
-    return wins;
+    return !!wins;
 }
 
 // ─── Public API ─────────────────────────────────────────────────────────────────

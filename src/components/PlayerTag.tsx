@@ -21,13 +21,7 @@ interface PlayerTagProps {
  * Reusable player identity badge — shows role icon, avatar, rank, name, and score.
  * Used by both the multiplayer Board and the AI Board.
  */
-export default function PlayerTag({
-    role,
-    displayName,
-    stats,
-    isEditable = false,
-    onEditClick,
-}: PlayerTagProps) {
+export default function PlayerTag({ role, displayName, stats }: PlayerTagProps) {
     const { language } = useLanguage();
     const roleColorClass = role === 'X' ? 'icon-x' : 'icon-o';
     const score = stats?.score ?? 0;
@@ -49,12 +43,6 @@ export default function PlayerTag({
                     {rankIcon}
                     <span className="rank-level">{rankTitle}</span>
                 </span>
-            )}
-
-            {isEditable && onEditClick && (
-                <button className="name-edit-btn" onClick={onEditClick} title="Edit name">
-                    ✏️
-                </button>
             )}
         </div>
     );

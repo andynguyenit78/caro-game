@@ -6,22 +6,26 @@ import { useRouter } from 'next/navigation';
 import GameOverOverlay from '../../components/GameOverOverlay';
 import PlayerTag from '../../components/PlayerTag';
 import InlineNameEditor from '../../components/InlineNameEditor';
+import EmotePicker from '../../components/EmotePicker';
 import { useLanguage } from '../../context/LanguageContext';
 import { Player } from '../../lib/gameLogic';
-import { playMoveSound, playVictorySound, playDefeatSound } from '../../lib/sounds';
+import { playMoveSound, playVictorySound, playDefeatSound, playSlashSound } from '../../lib/sounds';
 import { recordAIGameResult } from '../../lib/playerStats';
 
 /**
  * AI game board — single-player mode against the built-in Caro AI.
  */
 export default function AIBoard() {
-    const { gameState, playerStats, makeMove, resetGame } = useAIGameState();
+    const { gameState, playerStats, makeMove, resetGame, sendEmote } = useAIGameState();
     const { t } = useLanguage();
     const prevBoardRef = useRef<string>('');
     const prevWinnerRef = useRef<string>('');
     const hasRecordedResult = useRef(false);
     const [playerName, setPlayerName] = useState('');
     const [userId, setUserId] = useState('');
+    const [floatingEmotes, setFloatingEmotes] = useState<
+        { id: string; emoji: string; sender: string }[]
+    >([]);
     const router = useRouter();
 
     /** Load localStorage values on mount (client-only, safe for SSR). */
@@ -32,6 +36,27 @@ export default function AIBoard() {
     }, []);
 
     // ── Effects ──────────────────────────────────────────────────────────────
+
+    /** Listen for emotes and render floating animations */
+    useEffect(() => {
+        if (gameState.latestEmote) {
+            if (Date.now() - gameState.latestEmote.timestamp > 3000) return;
+            const newEmote = {
+                id: Math.random().toString(),
+                emoji: gameState.latestEmote.emoji,
+                sender: gameState.latestEmote.sender,
+            };
+            const tId = setTimeout(() => setFloatingEmotes((prev) => [...prev, newEmote]), 0);
+            const cId = setTimeout(
+                () => setFloatingEmotes((prev) => prev.filter((e) => e.id !== newEmote.id)),
+                2500
+            );
+            return () => {
+                clearTimeout(tId);
+                clearTimeout(cId);
+            };
+        }
+    }, [gameState.latestEmote]);
 
     /** Play a click sound whenever a new piece appears on the board. */
     useEffect(() => {
@@ -46,11 +71,15 @@ export default function AIBoard() {
     useEffect(() => {
         if (!gameState.winner || gameState.winner === prevWinnerRef.current) return;
 
-        if (gameState.winner === 'X') {
-            playVictorySound();
-        } else {
-            playDefeatSound();
-        }
+        playSlashSound();
+
+        setTimeout(() => {
+            if (gameState.winner === 'X') {
+                playVictorySound();
+            } else {
+                playDefeatSound();
+            }
+        }, 300);
 
         if (!hasRecordedResult.current) {
             hasRecordedResult.current = true;
@@ -77,6 +106,46 @@ export default function AIBoard() {
         return t('yourTurn');
     })();
 
+    const renderWinningLine = () => {
+        const line = gameState.winningLine;
+        if (!line || line.length < 5) return null;
+
+        const start = line[0];
+        const end = line[line.length - 1];
+        const offset = 100 / 15;
+
+        const startX = `calc(${start[1] + 0.5} * ${offset}%)`;
+        const startY = `calc(${start[0] + 0.5} * ${offset}%)`;
+        const endX = `calc(${end[1] + 0.5} * ${offset}%)`;
+        const endY = `calc(${end[0] + 0.5} * ${offset}%)`;
+
+        const strokeColor =
+            gameState.winner === 'X' ? 'var(--player-x-color)' : 'var(--player-o-color)';
+
+        return (
+            <svg
+                style={{
+                    position: 'absolute',
+                    inset: 0,
+                    width: '100%',
+                    height: '100%',
+                    pointerEvents: 'none',
+                    zIndex: 10,
+                }}
+            >
+                <line
+                    x1={startX}
+                    y1={startY}
+                    x2={endX}
+                    y2={endY}
+                    pathLength="100"
+                    className="winning-slash"
+                    stroke={strokeColor}
+                />
+            </svg>
+        );
+    };
+
     // ── Render ────────────────────────────────────────────────────────────────
 
     return (
@@ -98,9 +167,9 @@ export default function AIBoard() {
                             displayName={playerName || t('you')}
                             stats={playerStats}
                         />
-                        <InlineNameEditor
-                            userId={userId}
-                            onNameSaved={(newName) => setPlayerName(newName)}
+                        <EmotePicker
+                            onSelect={sendEmote}
+                            disabled={gameState.status !== 'playing'}
                         />
 
                         <span className="vs-text">VS</span>
@@ -152,10 +221,31 @@ export default function AIBoard() {
                             >
                                 {cell === 'X' && <IconX className="cell-icon icon-x" />}
                                 {cell === 'O' && <IconO className="cell-icon icon-o" />}
+                                {cell === '' &&
+                                    !gameState.aiThinking &&
+                                    gameState.status === 'playing' && (
+                                        <div className="ghost-icon">
+                                            <IconX className="cell-icon icon-x" />
+                                        </div>
+                                    )}
                             </div>
                         );
                     })
                 )}
+                {renderWinningLine()}
+
+                {floatingEmotes.map((emote) => (
+                    <div
+                        key={emote.id}
+                        className="floating-emote"
+                        style={{
+                            left: emote.sender === 'X' ? '20%' : '70%',
+                            bottom: '15%',
+                        }}
+                    >
+                        {emote.emoji}
+                    </div>
+                ))}
             </div>
 
             {/* ── Game Over Overlay ──────────────────────────────────── */}

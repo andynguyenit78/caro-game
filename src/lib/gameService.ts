@@ -23,6 +23,12 @@ export interface GameState {
         X?: boolean;
         O?: boolean;
     };
+    winningLine?: [number, number][] | null;
+    latestEmote?: {
+        emoji: string;
+        sender: Player;
+        timestamp: number;
+    } | null;
 }
 
 /**

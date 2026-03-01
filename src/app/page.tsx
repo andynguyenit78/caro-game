@@ -9,7 +9,7 @@ import {
     PlayerStats,
     LeaderboardEntry,
 } from '../lib/playerStats';
-import { getRankFromScore, getRankIcon, getRankTitle } from '../lib/rankSystem';
+import { getRankIcon, getRankTitle } from '../lib/rankSystem';
 
 export default function Home() {
     const router = useRouter();

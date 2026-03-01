@@ -20,20 +20,20 @@ const WIN_DIRECTIONS: [number, number][] = [
 const WIN_LENGTH = 5;
 
 /**
- * Count consecutive pieces belonging to `player` along a single axis
+ * Return an array of consecutive coordinates belonging to `player` along a single axis
  * through (`row`, `col`), checking both the forward and backward direction.
  */
-function countConsecutive(
+function getConsecutiveLine(
     board: BoardState,
     row: number,
     col: number,
     rowDelta: number,
     colDelta: number,
     player: Player
-): number {
+): [number, number][] {
     const totalRows = board.length;
     const totalCols = board[0].length;
-    let count = 1;
+    const line: [number, number][] = [[row, col]];
 
     // Scan forward
     let currentRow = row + rowDelta;
@@ -45,7 +45,7 @@ function countConsecutive(
         currentCol < totalCols &&
         board[currentRow][currentCol] === player
     ) {
-        count++;
+        line.push([currentRow, currentCol]);
         currentRow += rowDelta;
         currentCol += colDelta;
     }
@@ -60,25 +60,35 @@ function countConsecutive(
         currentCol < totalCols &&
         board[currentRow][currentCol] === player
     ) {
-        count++;
+        line.unshift([currentRow, currentCol]);
         currentRow -= rowDelta;
         currentCol -= colDelta;
     }
 
-    return count;
+    return line;
 }
 
 /**
  * Determine whether placing `player` at (`row`, `col`) creates a winning line
  * of 5 or more consecutive pieces in any direction.
+ * Returns the winning line of coordinates, or null if no win.
  */
-export function checkWin(board: BoardState, row: number, col: number, player: Player): boolean {
-    if (player === '') return false;
+export function checkWin(
+    board: BoardState,
+    row: number,
+    col: number,
+    player: Player
+): [number, number][] | null {
+    if (player === '') return null;
 
-    return WIN_DIRECTIONS.some(
-        ([rowDelta, colDelta]) =>
-            countConsecutive(board, row, col, rowDelta, colDelta, player) >= WIN_LENGTH
-    );
+    for (const [rowDelta, colDelta] of WIN_DIRECTIONS) {
+        const line = getConsecutiveLine(board, row, col, rowDelta, colDelta, player);
+        if (line.length >= WIN_LENGTH) {
+            return line;
+        }
+    }
+
+    return null;
 }
 
 /**

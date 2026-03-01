@@ -238,7 +238,8 @@ export function useGameState(roomId: string, userId: string) {
             const newBoard = gameState.board.map((r: Player[]) => [...r]);
             newBoard[row][col] = myPlayerRole;
 
-            const won = checkWin(newBoard, row, col, myPlayerRole);
+            const winningLine = checkWin(newBoard, row, col, myPlayerRole);
+            const won = !!winningLine;
             const nextPlayer = myPlayerRole === 'X' ? 'O' : 'X';
 
             await updateGameState(roomId, {
@@ -247,6 +248,7 @@ export function useGameState(roomId: string, userId: string) {
                 winner: won ? myPlayerRole : '',
                 status: won ? 'finished' : 'playing',
                 lastMove: [row, col],
+                ...(won ? { winningLine } : {}),
             });
         },
         [roomId, gameState, myPlayerRole]
@@ -270,6 +272,7 @@ export function useGameState(roomId: string, userId: string) {
                 lastMove: null,
                 quit: null,
                 playAgain: null,
+                winningLine: null,
             });
         } else {
             // Only this player voted so far
@@ -292,6 +295,21 @@ export function useGameState(roomId: string, userId: string) {
         await updateGameState(roomId, { status: 'finished', winner });
     }, [roomId, gameState.status, gameState.currentPlayer]);
 
+    /** Send a floating emoji reaction to the room. */
+    const sendEmote = useCallback(
+        async (emoji: string) => {
+            if (!myPlayerRole) return;
+            await updateGameState(roomId, {
+                latestEmote: {
+                    emoji,
+                    sender: myPlayerRole,
+                    timestamp: Date.now(),
+                },
+            });
+        },
+        [roomId, myPlayerRole]
+    );
+
     // ── Public API ───────────────────────────────────────────────────────────
 
     return {
@@ -304,6 +322,7 @@ export function useGameState(roomId: string, userId: string) {
         requestPlayAgain,
         quitGame,
         handleTimeOut,
+        sendEmote,
         hasRequestedPlayAgain: gameState.playAgain?.[myPlayerRole as 'X' | 'O'] === true,
         isMyTurn: gameState.currentPlayer === myPlayerRole,
         lastMove: gameState.lastMove || null,

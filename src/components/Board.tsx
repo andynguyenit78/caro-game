@@ -6,9 +6,10 @@ import { IconX, IconO } from './Icons';
 import GameOverOverlay from './GameOverOverlay';
 import PlayerTag from './PlayerTag';
 import InlineNameEditor from './InlineNameEditor';
+import EmotePicker from './EmotePicker';
 import { useLanguage } from '../context/LanguageContext';
 import { Player } from '../lib/gameLogic';
-import { playMoveSound, playVictorySound, playDefeatSound } from '../lib/sounds';
+import { playMoveSound, playVictorySound, playDefeatSound, playSlashSound } from '../lib/sounds';
 import { usePlayerSettings } from '../hooks/usePlayerSettings';
 
 /** Fallback if the room was created before `timerDuration` existed in the schema. */
@@ -32,12 +33,17 @@ export default function Board({ roomId, userId }: { roomId: string; userId: stri
         hasRequestedPlayAgain,
         isMyTurn,
         lastMove,
+        sendEmote,
     } = useGameState(roomId, userId);
     const { t } = useLanguage();
     const { soundEnabled } = usePlayerSettings();
 
     const [playerName, setPlayerName] = useState('');
     const [timeLeft, setTimeLeft] = useState(DEFAULT_TIMER_SECONDS);
+    const [floatingEmotes, setFloatingEmotes] = useState<
+        { id: string; emoji: string; sender: string }[]
+    >([]);
+
     const prevBoardRef = useRef<string>('');
     const prevWinnerRef = useRef<string>('');
 
@@ -46,6 +52,27 @@ export default function Board({ roomId, userId }: { roomId: string; userId: stri
     const opponentRole = myPlayerRole === 'X' ? 'O' : 'X';
 
     // ── Effects ──────────────────────────────────────────────────────────────
+
+    /** Listen for emotes and render floating animations */
+    useEffect(() => {
+        if (gameState.latestEmote) {
+            if (Date.now() - gameState.latestEmote.timestamp > 3000) return;
+            const newEmote = {
+                id: Math.random().toString(),
+                emoji: gameState.latestEmote.emoji,
+                sender: gameState.latestEmote.sender,
+            };
+            const tId = setTimeout(() => setFloatingEmotes((prev) => [...prev, newEmote]), 0);
+            const cId = setTimeout(
+                () => setFloatingEmotes((prev) => prev.filter((e) => e.id !== newEmote.id)),
+                2500
+            );
+            return () => {
+                clearTimeout(tId);
+                clearTimeout(cId);
+            };
+        }
+    }, [gameState.latestEmote]);
 
     /** Redirect both players to the homepage when the game is quit. */
     useEffect(() => {
@@ -75,11 +102,15 @@ export default function Board({ roomId, userId }: { roomId: string; userId: stri
     /** Play victory or defeat fanfare when a winner is declared. */
     useEffect(() => {
         if (gameState.winner && gameState.winner !== prevWinnerRef.current) {
-            if (gameState.winner === myPlayerRole) {
-                playVictorySound();
-            } else if (myPlayerRole) {
-                playDefeatSound();
-            }
+            playSlashSound();
+
+            setTimeout(() => {
+                if (gameState.winner === myPlayerRole) {
+                    playVictorySound();
+                } else if (myPlayerRole) {
+                    playDefeatSound();
+                }
+            }, 300);
         }
         prevWinnerRef.current = gameState.winner;
     }, [gameState.winner, myPlayerRole]);
@@ -117,6 +148,46 @@ export default function Board({ roomId, userId }: { roomId: string; userId: stri
         if (gameState.winner) return gameState.winner === myPlayerRole ? t('youWon') : t('youLost');
         return isMyTurn ? t('yourTurn') : t('opponentTurn');
     })();
+
+    const renderWinningLine = () => {
+        const line = gameState.winningLine;
+        if (!line || line.length < 5) return null;
+
+        const start = line[0];
+        const end = line[line.length - 1];
+        const offset = 100 / 15;
+
+        const startX = `calc(${start[1] + 0.5} * ${offset}%)`;
+        const startY = `calc(${start[0] + 0.5} * ${offset}%)`;
+        const endX = `calc(${end[1] + 0.5} * ${offset}%)`;
+        const endY = `calc(${end[0] + 0.5} * ${offset}%)`;
+
+        const strokeColor =
+            gameState.winner === 'X' ? 'var(--player-x-color)' : 'var(--player-o-color)';
+
+        return (
+            <svg
+                style={{
+                    position: 'absolute',
+                    inset: 0,
+                    width: '100%',
+                    height: '100%',
+                    pointerEvents: 'none',
+                    zIndex: 10,
+                }}
+            >
+                <line
+                    x1={startX}
+                    y1={startY}
+                    x2={endX}
+                    y2={endY}
+                    pathLength="100"
+                    className="winning-slash"
+                    stroke={strokeColor}
+                />
+            </svg>
+        );
+    };
 
     const isTimerDanger = timeLeft <= 10;
 
@@ -156,7 +227,11 @@ export default function Board({ roomId, userId }: { roomId: string; userId: stri
                             displayName={playerName || t('you')}
                             stats={myPlayerRole ? playersStats[myPlayerRole as 'X' | 'O'] : null}
                         />
-                        <InlineNameEditor userId={userId} onNameSaved={setPlayerName} />
+
+                        <EmotePicker
+                            onSelect={sendEmote}
+                            disabled={gameState.status !== 'playing' || !myPlayerRole}
+                        />
 
                         {gameState.status !== 'waiting' && opponentRole && (
                             <>
@@ -207,10 +282,33 @@ export default function Board({ roomId, userId }: { roomId: string; userId: stri
                             >
                                 {cell === 'X' && <IconX className="cell-icon icon-x" />}
                                 {cell === 'O' && <IconO className="cell-icon icon-o" />}
+                                {cell === '' && isMyTurn && (
+                                    <div className="ghost-icon">
+                                        {myPlayerRole === 'X' ? (
+                                            <IconX className="cell-icon icon-x" />
+                                        ) : (
+                                            <IconO className="cell-icon icon-o" />
+                                        )}
+                                    </div>
+                                )}
                             </div>
                         );
                     })
                 )}
+                {renderWinningLine()}
+
+                {floatingEmotes.map((emote) => (
+                    <div
+                        key={emote.id}
+                        className="floating-emote"
+                        style={{
+                            left: emote.sender === 'X' ? '20%' : '70%',
+                            bottom: '15%',
+                        }}
+                    >
+                        {emote.emoji}
+                    </div>
+                ))}
             </div>
 
             {/* ── Game Over Overlay ──────────────────────────────────── */}

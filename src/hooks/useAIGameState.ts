@@ -13,6 +13,12 @@ interface AIGameState {
     status: GameStatus;
     lastMove: [number, number] | null;
     aiThinking: boolean;
+    winningLine?: [number, number][] | null;
+    latestEmote?: {
+        emoji: string;
+        sender: Player;
+        timestamp: number;
+    } | null;
 }
 
 export function useAIGameState() {
@@ -23,6 +29,8 @@ export function useAIGameState() {
         status: 'playing',
         lastMove: null,
         aiThinking: false,
+        winningLine: null,
+        latestEmote: null,
     });
 
     const makeMove = useCallback((row: number, col: number) => {
@@ -35,7 +43,8 @@ export function useAIGameState() {
             const newBoard = prev.board.map((r) => [...r]);
             newBoard[row][col] = 'X';
 
-            if (checkWin(newBoard, row, col, 'X')) {
+            const winningLine = checkWin(newBoard, row, col, 'X');
+            if (winningLine) {
                 return {
                     ...prev,
                     board: newBoard,
@@ -44,6 +53,7 @@ export function useAIGameState() {
                     status: 'finished' as GameStatus,
                     lastMove: [row, col] as [number, number],
                     aiThinking: false,
+                    winningLine,
                 };
             }
 
@@ -66,7 +76,8 @@ export function useAIGameState() {
                 const [aiRow, aiCol] = findBestMove(newBoard, 'O');
                 newBoard[aiRow][aiCol] = 'O';
 
-                if (checkWin(newBoard, aiRow, aiCol, 'O')) {
+                const aiWinningLine = checkWin(newBoard, aiRow, aiCol, 'O');
+                if (aiWinningLine) {
                     return {
                         ...prev,
                         board: newBoard,
@@ -75,6 +86,8 @@ export function useAIGameState() {
                         status: 'finished' as GameStatus,
                         lastMove: [aiRow, aiCol] as [number, number],
                         aiThinking: false,
+                        winningLine: aiWinningLine,
+                        latestEmote: { emoji: '🤣', sender: 'O', timestamp: Date.now() },
                     };
                 }
 
@@ -97,7 +110,42 @@ export function useAIGameState() {
             status: 'playing',
             lastMove: null,
             aiThinking: false,
+            winningLine: null,
+            latestEmote: null,
         });
+    }, []);
+
+    const sendEmote = useCallback((emoji: string) => {
+        setGameState((prev) => ({
+            ...prev,
+            latestEmote: {
+                emoji,
+                sender: 'X',
+                timestamp: Date.now(),
+            },
+        }));
+
+        // AI might reply with a random emote
+        if (Math.random() > 0.4) {
+            setTimeout(
+                () => {
+                    setGameState((prev) => {
+                        if (prev.status !== 'playing') return prev;
+                        const aiEmotes = ['😠', '😭', '🤯', '🤔', '👀'];
+                        const randomEmote = aiEmotes[Math.floor(Math.random() * aiEmotes.length)];
+                        return {
+                            ...prev,
+                            latestEmote: {
+                                emoji: randomEmote,
+                                sender: 'O',
+                                timestamp: Date.now(),
+                            },
+                        };
+                    });
+                },
+                1000 + Math.random() * 1000
+            );
+        }
     }, []);
 
     const [playerStats, setPlayerStats] = useState<PlayerStats | null>(null);
@@ -112,5 +160,5 @@ export function useAIGameState() {
         return () => unsub();
     }, []);
 
-    return { gameState, playerStats, makeMove, resetGame };
+    return { gameState, playerStats, makeMove, resetGame, sendEmote };
 }
