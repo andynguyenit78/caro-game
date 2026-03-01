@@ -657,6 +657,31 @@ button {
     background: transparent;
 }
 
+/* ===== Profile Button ===== */
+.profile-pill {
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: 50%;
+    /* Make it perfectly round */
+    width: 38px;
+    height: 38px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    font-size: 1.1rem;
+    opacity: 0.8;
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.profile-pill:hover {
+    opacity: 1;
+    transform: scale(1.1) translateY(-1px);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
+    border-color: var(--text-color);
+}
+
 /* ===== Last Move Highlight ===== */
 .cell-last-move {
     position: relative;
