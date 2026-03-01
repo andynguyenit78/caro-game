@@ -86,8 +86,8 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
                     circle.style.backgroundColor = flashColor;
                     circle.style.zIndex = '9999';
                     circle.style.transform = 'translate(-50%, -50%) scale(0)';
-                    // Use the elastic spring curve for the expanding circle
-                    circle.style.transition = 'transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1)';
+                    // Use a very smooth ease-out curve for full-screen elements (avoiding harsh overshoots on massive scales)
+                    circle.style.transition = 'transform 0.7s cubic-bezier(0.22, 1, 0.36, 1)';
 
                     document.body.appendChild(circle);
 
@@ -99,7 +99,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
                     });
 
                     // Remove the DOM node after it covers the screen
-                    setTimeout(() => circle.remove(), 600);
+                    setTimeout(() => circle.remove(), 750);
                 } else {
                     // Fallback to simple fade if no event provided
                     const overlay = document.createElement('div');
