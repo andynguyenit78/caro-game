@@ -1,5 +1,5 @@
 'use client';
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import React, { createContext, useContext, useState, useCallback } from 'react';
 import { Language, translations, TranslationKey } from '../lib/translations';
 
 interface LanguageContextType {
@@ -10,19 +10,20 @@ interface LanguageContextType {
 
 const LanguageContext = createContext<LanguageContextType | null>(null);
 
-export function LanguageProvider({ children }: { children: React.ReactNode }) {
-    const [language, setLanguageState] = useState<Language>('en');
+function getInitialLang(): Language {
+    if (typeof window === 'undefined') return 'en';
+    const stored = localStorage.getItem('caroLanguage');
+    if (stored === 'en' || stored === 'vi') return stored;
+    return 'en';
+}
 
-    useEffect(() => {
-        const stored = localStorage.getItem('caroLanguage') as Language | null;
-        if (stored && (stored === 'en' || stored === 'vi')) {
-            setLanguageState(stored);
-        }
-    }, []);
+export function LanguageProvider({ children }: { children: React.ReactNode }) {
+    const [language, setLanguageState] = useState<Language>(getInitialLang);
 
     const setLanguage = useCallback((lang: Language) => {
         setLanguageState(lang);
         localStorage.setItem('caroLanguage', lang);
+        document.documentElement.setAttribute('lang', lang);
     }, []);
 
     const t = useCallback((key: TranslationKey, vars?: Record<string, string>): string => {

@@ -11,9 +11,19 @@ interface ThemeContextType {
 
 const ThemeContext = createContext<ThemeContextType | null>(null);
 
+function getInitialMode(): ThemeMode {
+    if (typeof window === 'undefined') return 'system';
+    return (localStorage.getItem('caroTheme') as ThemeMode) || 'system';
+}
+
+function getSystemPref(): 'light' | 'dark' {
+    if (typeof window === 'undefined') return 'light';
+    return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+}
+
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-    const [mode, setModeState] = useState<ThemeMode>('system');
-    const [systemPreference, setSystemPreference] = useState<'light' | 'dark'>('light');
+    const [mode, setModeState] = useState<ThemeMode>(getInitialMode);
+    const [systemPreference, setSystemPreference] = useState<'light' | 'dark'>(getSystemPref);
 
     // Listen to system preference changes
     useEffect(() => {
@@ -25,14 +35,6 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
         };
         mq.addEventListener('change', handler);
         return () => mq.removeEventListener('change', handler);
-    }, []);
-
-    // Load saved mode
-    useEffect(() => {
-        const stored = localStorage.getItem('caroTheme') as ThemeMode | null;
-        if (stored && ['light', 'dark', 'system'].includes(stored)) {
-            setModeState(stored);
-        }
     }, []);
 
     const resolvedTheme = mode === 'system' ? systemPreference : mode;
