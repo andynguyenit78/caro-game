@@ -21,16 +21,6 @@ export default function SettingsToolbar() {
         <header className="app-header" style={{ visibility: mounted ? 'visible' : 'hidden' }}>
             {/* Left side: Back Button + Logo & Title */}
             <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', pointerEvents: 'auto' }}>
-                {!isHome && (
-                    <button
-                        className="pill"
-                        onClick={() => router.push('/')}
-                        title={t('backHome')}
-                        style={{ padding: '0.4rem 0.8rem', background: 'var(--primary-color)', color: 'white' }}
-                    >
-                        🏠
-                    </button>
-                )}
                 <div
                     className="app-brand"
                     onClick={() => router.push('/')}
