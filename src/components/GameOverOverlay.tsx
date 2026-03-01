@@ -1,5 +1,6 @@
 'use client';
 import React, { useEffect, useState } from 'react';
+import { useLanguage } from '../context/LanguageContext';
 
 interface GameOverOverlayProps {
     isWinner: boolean;
@@ -7,7 +8,6 @@ interface GameOverOverlayProps {
     playerRole: string;
 }
 
-// Confetti particle component
 function ConfettiParticle({ index }: { index: number }) {
     const colors = ['#ff6b6b', '#ffd93d', '#6bcb77', '#4d96ff', '#ff6fb7', '#c084fc', '#22d3ee'];
     const color = colors[index % colors.length];
@@ -33,16 +33,15 @@ function ConfettiParticle({ index }: { index: number }) {
 
 export default function GameOverOverlay({ isWinner, onPlayAgain, playerRole }: GameOverOverlayProps) {
     const [visible, setVisible] = useState(false);
+    const { t } = useLanguage();
 
     useEffect(() => {
-        // Tiny delay so CSS transition plays
         const timer = setTimeout(() => setVisible(true), 50);
         return () => clearTimeout(timer);
     }, []);
 
     return (
         <div className={`game-over-overlay ${visible ? 'visible' : ''} ${isWinner ? 'win' : 'lose'}`}>
-            {/* Confetti for winner */}
             {isWinner && (
                 <div className="confetti-container">
                     {Array.from({ length: 60 }).map((_, i) => (
@@ -56,15 +55,15 @@ export default function GameOverOverlay({ isWinner, onPlayAgain, playerRole }: G
                     {isWinner ? '🏆' : '😢'}
                 </div>
                 <h2 className="game-over-title">
-                    {isWinner ? 'Victory!' : 'Defeat'}
+                    {isWinner ? t('victory') : t('defeat')}
                 </h2>
                 <p className="game-over-subtitle">
                     {isWinner
-                        ? `Congratulations! Player ${playerRole} wins!`
-                        : 'Better luck next time!'}
+                        ? t('congratsWin', { player: playerRole })
+                        : t('betterLuck')}
                 </p>
                 <button className="btn-primary game-over-btn" onClick={onPlayAgain}>
-                    Play Again
+                    {t('playAgain')}
                 </button>
             </div>
         </div>

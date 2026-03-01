@@ -17,18 +17,16 @@
   --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.05);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #111418;
-    --text-color: #f8f9fa;
-    --grid-line-color: #2a2e33;
-    --player-x-color: #00b4d8;
-    --player-o-color: #ef233c;
+[data-theme='dark'] {
+  --background: #111418;
+  --text-color: #f8f9fa;
+  --grid-line-color: #2a2e33;
+  --player-x-color: #00b4d8;
+  --player-o-color: #ef233c;
 
-    --glass-bg: rgba(20, 24, 28, 0.7);
-    --glass-border: rgba(255, 255, 255, 0.1);
-    --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
-  }
+  --glass-bg: rgba(20, 24, 28, 0.7);
+  --glass-border: rgba(255, 255, 255, 0.1);
+  --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
 }
 
 * {
@@ -93,10 +91,8 @@ body {
   background-color: rgba(0, 0, 0, 0.02);
 }
 
-@media (prefers-color-scheme: dark) {
-  .cell:hover {
-    background-color: rgba(255, 255, 255, 0.05);
-  }
+[data-theme='dark'] .cell:hover {
+  background-color: rgba(255, 255, 255, 0.05);
 }
 
 .cell-icon {
@@ -369,4 +365,56 @@ button {
   75% {
     transform: translateX(-3px);
   }
+}
+
+/* ===== Settings Toolbar ===== */
+.settings-toolbar {
+  position: fixed;
+  top: 1rem;
+  right: 1rem;
+  z-index: 900;
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.settings-group {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.toggle-pills {
+  display: flex;
+  background: var(--glass-bg);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--glass-border);
+  border-radius: 20px;
+  padding: 3px;
+  gap: 2px;
+}
+
+.pill {
+  all: unset;
+  cursor: pointer;
+  box-sizing: border-box;
+  padding: 0.3rem 0.6rem;
+  border-radius: 16px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--text-color);
+  opacity: 0.5;
+  transition: all 0.25s ease;
+  white-space: nowrap;
+}
+
+.pill:hover {
+  opacity: 0.8;
+}
+
+.pill.active {
+  opacity: 1;
+  background: var(--text-color);
+  color: var(--background);
 }
