@@ -81,7 +81,13 @@ export default function AIBoard() {
 
     return (
         <div className="board-container">
-
+            <button
+                className="top-left-back-btn"
+                onClick={() => window.location.href = '/'}
+                title={t('backHome')}
+            >
+                🏠
+            </button>
             <div className="dashboard glass">
                 <div className="status-badge" style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: '0.3rem' }}>
                     <div className="players-row">                        <div className="player-tag">
