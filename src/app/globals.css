@@ -206,3 +206,167 @@ button {
   cursor: pointer;
   box-sizing: border-box;
 }
+
+/* ===== Game Over Overlay ===== */
+.game-over-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.5s ease;
+  pointer-events: none;
+}
+
+.game-over-overlay.visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.game-over-overlay.win {
+  background: radial-gradient(ellipse at center, rgba(0, 0, 0, 0.3) 0%, rgba(0, 0, 0, 0.7) 100%);
+}
+
+.game-over-overlay.lose {
+  background: radial-gradient(ellipse at center, rgba(20, 0, 0, 0.4) 0%, rgba(0, 0, 0, 0.8) 100%);
+}
+
+/* Card */
+.game-over-card {
+  position: relative;
+  z-index: 10;
+  padding: 3rem 4rem;
+  text-align: center;
+  transform: scale(0.7) translateY(30px);
+  transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+  min-width: 340px;
+}
+
+.game-over-overlay.visible .game-over-card {
+  transform: scale(1) translateY(0);
+}
+
+.win-card {
+  border: 2px solid rgba(255, 215, 0, 0.4) !important;
+  box-shadow: 0 0 60px rgba(255, 215, 0, 0.15), 0 20px 60px rgba(0, 0, 0, 0.3) !important;
+}
+
+.lose-card {
+  border: 2px solid rgba(255, 60, 60, 0.3) !important;
+  box-shadow: 0 0 40px rgba(255, 0, 0, 0.1), 0 20px 60px rgba(0, 0, 0, 0.3) !important;
+}
+
+.game-over-emoji {
+  font-size: 4rem;
+  margin-bottom: 0.5rem;
+  animation: emojiPulse 1.5s ease-in-out infinite;
+}
+
+.lose .game-over-emoji {
+  animation: emojiShake 0.6s ease-in-out;
+}
+
+.game-over-title {
+  font-size: 2.2rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+}
+
+.win .game-over-title {
+  background: linear-gradient(135deg, #ffd700, #ff8c00);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.lose .game-over-title {
+  color: #ff6b6b;
+}
+
+.game-over-subtitle {
+  font-size: 1rem;
+  opacity: 0.8;
+  margin-bottom: 2rem;
+}
+
+.game-over-btn {
+  padding: 0.8rem 2.5rem !important;
+  font-size: 1.1rem !important;
+  border-radius: 12px !important;
+  transition: transform 0.2s ease, box-shadow 0.2s ease !important;
+}
+
+.game-over-btn:hover {
+  transform: translateY(-3px) !important;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2) !important;
+}
+
+/* Confetti */
+.confetti-container {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  z-index: 5;
+  pointer-events: none;
+}
+
+.confetti-particle {
+  position: absolute;
+  top: -20px;
+  border-radius: 2px;
+  animation: confettiFall linear forwards;
+}
+
+@keyframes confettiFall {
+  0% {
+    transform: translateY(0) rotate(0deg) scale(1);
+    opacity: 1;
+  }
+
+  100% {
+    transform: translateY(110vh) rotate(720deg) scale(0.3);
+    opacity: 0;
+  }
+}
+
+@keyframes emojiPulse {
+
+  0%,
+  100% {
+    transform: scale(1);
+  }
+
+  50% {
+    transform: scale(1.15);
+  }
+}
+
+@keyframes emojiShake {
+
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+
+  15% {
+    transform: translateX(-8px) rotate(-5deg);
+  }
+
+  30% {
+    transform: translateX(8px) rotate(5deg);
+  }
+
+  45% {
+    transform: translateX(-6px) rotate(-3deg);
+  }
+
+  60% {
+    transform: translateX(6px) rotate(3deg);
+  }
+
+  75% {
+    transform: translateX(-3px);
+  }
+}

@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { useGameState } from '../hooks/useGameState';
 import { IconX, IconO } from './Icons';
+import GameOverOverlay from './GameOverOverlay';
 
 export default function Board({ roomId, userId }: { roomId: string, userId: string }) {
     const { gameState, myPlayerRole, makeMove, joinGame, resetGame, isMyTurn } = useGameState(roomId, userId);
@@ -61,11 +62,7 @@ export default function Board({ roomId, userId }: { roomId: string, userId: stri
                         </button>
                     )}
 
-                    {gameState.status === 'finished' && myPlayerRole && (
-                        <button className="btn-primary" onClick={resetGame}>
-                            Play Again
-                        </button>
-                    )}
+
                 </div>
             </div>
 
@@ -90,6 +87,13 @@ export default function Board({ roomId, userId }: { roomId: string, userId: stri
                     ))
                 ))}
             </div>
+            {gameState.status === 'finished' && myPlayerRole && (
+                <GameOverOverlay
+                    isWinner={gameState.winner === myPlayerRole}
+                    onPlayAgain={resetGame}
+                    playerRole={gameState.winner || ''}
+                />
+            )}
         </div>
     );
 }
