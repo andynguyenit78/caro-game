@@ -631,9 +631,11 @@ button {
 }
 
 .pill {
+    all: unset;
     flex: 1;
     /* Match sizes equally in toggle-pills container */
-    all: unset;
+    position: relative;
+    z-index: 1;
     cursor: pointer;
     box-sizing: border-box;
     padding: 0.3rem 0.6rem;
