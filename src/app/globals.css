@@ -415,7 +415,6 @@ button {
   }
 }
 
-/* ===== Settings Toolbar ===== */
 .settings-toolbar {
   position: fixed;
   top: 1rem;
@@ -424,6 +423,53 @@ button {
   display: flex;
   gap: 0.5rem;
   align-items: center;
+}
+
+.top-left-back-btn {
+  position: fixed;
+  top: 1rem;
+  left: 1rem;
+  z-index: 900;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--glass-bg);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow);
+  color: var(--text-color);
+  font-size: 1.2rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-decoration: none;
+}
+
+.top-left-back-btn:hover {
+  transform: scale(1.1);
+  background: var(--text-color);
+  color: var(--background);
+}
+
+/* ===== Skeleton Loaders ===== */
+.skeleton {
+  background: linear-gradient(90deg, var(--grid-line-color) 25%, var(--background) 50%, var(--grid-line-color) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 8px;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+
+  100% {
+    background-position: -200% 0;
+  }
 }
 
 .settings-group {

@@ -81,35 +81,32 @@ export default function AIBoard() {
 
     return (
         <div className="board-container">
+            <button
+                className="top-left-back-btn"
+                onClick={() => window.location.href = '/'}
+                title={t('backHome')}
+            >
+                🏠
+            </button>
             <div className="dashboard glass">
                 <div className="status-badge" style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: '0.3rem' }}>
-                    <div className="players-row">
-                        <button
-                            className="profile-back-btn"
-                            style={{ position: 'relative', top: 0, left: 0, marginRight: '0.5rem' }}
-                            onClick={() => window.location.href = '/'}
-                            title={t('backHome')}
-                        >
-                            🏠
-                        </button>
-
-                        <div className="player-tag">
-                            <span className="icon-x" style={{ fontWeight: 'bold' }}>X</span>
-                            {playerStats && playerStats.avatar && (
-                                <span className="lb-avatar">{playerStats.avatar}</span>
-                            )}
-                            <span>{playerName || t('you')}</span>
-                            {playerStats && playerStats.gamesPlayed > 0 && (
-                                <span className="lb-stats" style={{ marginLeft: '0.2rem' }}>
-                                    ({Math.round((playerStats.wins / playerStats.gamesPlayed) * 100)}%)
-                                </span>
-                            )}
-                            {!editingName && (
-                                <button className="name-edit-btn" onClick={() => { setNameInput(playerName); setEditingName(true); }} title={t('editName')}>
-                                    ✏️
-                                </button>
-                            )}
-                        </div>
+                    <div className="players-row">                        <div className="player-tag">
+                        <span className="icon-x" style={{ fontWeight: 'bold' }}>X</span>
+                        {playerStats && playerStats.avatar && (
+                            <span className="lb-avatar">{playerStats.avatar}</span>
+                        )}
+                        <span>{playerName || t('you')}</span>
+                        {playerStats && playerStats.gamesPlayed > 0 && (
+                            <span className="lb-stats" style={{ marginLeft: '0.2rem' }}>
+                                ({Math.round((playerStats.wins / playerStats.gamesPlayed) * 100)}%)
+                            </span>
+                        )}
+                        {!editingName && (
+                            <button className="name-edit-btn" onClick={() => { setNameInput(playerName); setEditingName(true); }} title={t('editName')}>
+                                ✏️
+                            </button>
+                        )}
+                    </div>
                         <span className="vs-text">VS</span>
                         <div className="player-tag">
                             <span className="icon-o" style={{ fontWeight: 'bold' }}>O</span>

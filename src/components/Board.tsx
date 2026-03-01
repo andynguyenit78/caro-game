@@ -108,17 +108,16 @@ export default function Board({ roomId, userId }: { roomId: string, userId: stri
 
     return (
         <div className="board-container">
+            <button
+                className="top-left-back-btn"
+                onClick={() => window.location.href = '/'}
+                title={t('backHome')}
+            >
+                🏠
+            </button>
             <div className="dashboard glass">
                 <div className="status-badge" style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: '0.3rem' }}>
                     <div className="players-row">
-                        <button
-                            className="profile-back-btn"
-                            style={{ position: 'relative', top: 0, left: 0, marginRight: '0.5rem' }}
-                            onClick={() => window.location.href = '/'}
-                            title={t('backHome')}
-                        >
-                            🏠
-                        </button>
 
                         <div className="player-tag">
                             <span className={myPlayerRole === 'X' ? 'icon-x' : 'icon-o'} style={{ fontWeight: 'bold' }}>

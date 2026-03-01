@@ -10,6 +10,8 @@ export default function Home() {
   const [roomId, setRoomId] = useState('');
   const [stats, setStats] = useState<PlayerStats | null>(null);
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
+  const [isLoadingStats, setIsLoadingStats] = useState(true);
+  const [isLoadingLeaderboard, setIsLoadingLeaderboard] = useState(true);
   const { t } = useLanguage();
 
   useEffect(() => {
@@ -22,10 +24,16 @@ export default function Home() {
     }
 
     // Subscribe to own stats
-    const unsub = subscribeToStats(userId, setStats);
+    const unsub = subscribeToStats(userId, (s) => {
+      setStats(s);
+      setIsLoadingStats(false);
+    });
 
     // Fetch leaderboard
-    fetchLeaderboard(10).then(setLeaderboard);
+    fetchLeaderboard(10).then(data => {
+      setLeaderboard(data);
+      setIsLoadingLeaderboard(false);
+    });
 
     return () => unsub();
   }, []);
@@ -64,7 +72,9 @@ export default function Home() {
           </div>
 
           {/* Stats Badge */}
-          {stats && stats.gamesPlayed > 0 && (
+          {isLoadingStats ? (
+            <div className="stats-badge skeleton" style={{ width: '250px', height: '44px', margin: '1.2rem auto 0' }} />
+          ) : stats && stats.gamesPlayed > 0 && (
             <div className="stats-badge">
               <div className="stat-item">
                 <span className="stat-value">{stats.wins}</span>
@@ -127,26 +137,33 @@ export default function Home() {
         </div>
 
         {/* Leaderboard Card */}
-        {leaderboard.length > 0 && (
+        {(isLoadingLeaderboard || leaderboard.length > 0) && (
           <div className="glass home-card leaderboard" style={{ padding: '2rem', flex: 1, marginTop: 0 }}>
             <h3 className="leaderboard-title">🏆 {t('leaderboard')}</h3>
             <div className="leaderboard-list">
-              {leaderboard.map((entry, index) => (
-                <div
-                  key={entry.userId}
-                  className={`leaderboard-row ${entry.userId === myUserId ? 'leaderboard-row-me' : ''}`}
-                >
-                  <span className="lb-rank">
-                    {index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : `#${index + 1}`}
-                  </span>
-                  {entry.avatar && <span className="lb-avatar">{entry.avatar}</span>}
-                  <span className="lb-name">{entry.name}</span>
-                  <span className="lb-stats">
-                    {entry.wins}W {entry.losses}L
-                  </span>
-                  <span className="lb-winrate">{entry.winRate}%</span>
-                </div>
-              ))}
+              {isLoadingLeaderboard ? (
+                // Skeleton rows
+                Array.from({ length: 5 }).map((_, i) => (
+                  <div key={i} className="leaderboard-row skeleton" style={{ height: '44px', marginBottom: '8px' }} />
+                ))
+              ) : (
+                leaderboard.map((entry, index) => (
+                  <div
+                    key={entry.userId}
+                    className={`leaderboard-row ${entry.userId === myUserId ? 'leaderboard-row-me' : ''}`}
+                  >
+                    <span className="lb-rank">
+                      {index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : `#${index + 1}`}
+                    </span>
+                    {entry.avatar && <span className="lb-avatar">{entry.avatar}</span>}
+                    <span className="lb-name">{entry.name}</span>
+                    <span className="lb-stats">
+                      {entry.wins}W {entry.losses}L
+                    </span>
+                    <span className="lb-winrate">{entry.winRate}%</span>
+                  </div>
+                ))
+              )}
             </div>
           </div>
         )}
