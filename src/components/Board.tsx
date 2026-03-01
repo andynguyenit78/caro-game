@@ -11,7 +11,7 @@ import { updatePlayerName } from '../lib/playerStats';
 const MOVE_TIMER_SECONDS = 30;
 
 export default function Board({ roomId, userId }: { roomId: string, userId: string }) {
-    const { gameState, myPlayerRole, opponentName, makeMove, joinGame, resetGame, isMyTurn, lastMove } = useGameState(roomId, userId);
+    const { gameState, myPlayerRole, opponentName, playersStats, makeMove, joinGame, resetGame, isMyTurn, lastMove } = useGameState(roomId, userId);
     const { t } = useLanguage();
     const [playerName, setPlayerName] = useState('');
     const [editingName, setEditingName] = useState(false);
@@ -110,27 +110,51 @@ export default function Board({ roomId, userId }: { roomId: string, userId: stri
         <div className="board-container">
             <div className="dashboard glass">
                 <div className="status-badge" style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: '0.3rem' }}>
-                    {/* Player info row */}
                     <div className="players-row">
+                        <button
+                            className="profile-back-btn"
+                            style={{ position: 'relative', top: 0, left: 0, marginRight: '0.5rem' }}
+                            onClick={() => window.location.href = '/'}
+                            title={t('backHome')}
+                        >
+                            🏠
+                        </button>
+
                         <div className="player-tag">
                             <span className={myPlayerRole === 'X' ? 'icon-x' : 'icon-o'} style={{ fontWeight: 'bold' }}>
                                 {myPlayerRole || '?'}
                             </span>
+                            {playersStats && playersStats[myPlayerRole as 'X' | 'O']?.avatar && (
+                                <span className="lb-avatar">{playersStats[myPlayerRole as 'X' | 'O'].avatar}</span>
+                            )}
                             <span>{playerName || t('you')}</span>
+                            {playersStats && playersStats[myPlayerRole as 'X' | 'O']?.gamesPlayed > 0 && (
+                                <span className="lb-stats" style={{ marginLeft: '0.2rem' }}>
+                                    ({Math.round((playersStats[myPlayerRole as 'X' | 'O'].wins / playersStats[myPlayerRole as 'X' | 'O'].gamesPlayed) * 100)}%)
+                                </span>
+                            )}
                             {!editingName && (
                                 <button className="name-edit-btn" onClick={() => { setNameInput(playerName); setEditingName(true); }} title={t('editName')}>
                                     ✏️
                                 </button>
                             )}
                         </div>
-                        {gameState.status !== 'waiting' && (
+                        {gameState.status !== 'waiting' && opponentRole && (
                             <>
                                 <span className="vs-text">VS</span>
                                 <div className="player-tag">
                                     <span className={opponentRole === 'X' ? 'icon-x' : 'icon-o'} style={{ fontWeight: 'bold' }}>
                                         {opponentRole}
                                     </span>
+                                    {playersStats && playersStats[opponentRole as 'X' | 'O']?.avatar && (
+                                        <span className="lb-avatar">{playersStats[opponentRole as 'X' | 'O'].avatar}</span>
+                                    )}
                                     <span>{opponentName || t('opponent')}</span>
+                                    {playersStats && playersStats[opponentRole as 'X' | 'O']?.gamesPlayed > 0 && (
+                                        <span className="lb-stats" style={{ marginLeft: '0.2rem' }}>
+                                            ({Math.round((playersStats[opponentRole as 'X' | 'O'].wins / playersStats[opponentRole as 'X' | 'O'].gamesPlayed) * 100)}%)
+                                        </span>
+                                    )}
                                 </div>
                             </>
                         )}

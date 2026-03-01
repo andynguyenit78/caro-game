@@ -67,7 +67,7 @@ export default function ProfilePage() {
             <div className="glass profile-card">
                 <button
                     className="profile-back-btn"
-                    onClick={() => router.push('/')}
+                    onClick={() => router.back()}
                     title={t('backHome')}
                 >
                     ← {t('backHome')}

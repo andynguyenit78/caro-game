@@ -9,7 +9,7 @@ import { playMoveSound, playVictorySound, playDefeatSound } from '../../lib/soun
 import { updatePlayerName, recordAIGameResult } from '../../lib/playerStats';
 
 export default function AIBoard() {
-    const { gameState, makeMove, resetGame } = useAIGameState();
+    const { gameState, playerStats, makeMove, resetGame } = useAIGameState();
     const { t } = useLanguage();
     const [playerName, setPlayerName] = useState('');
     const [editingName, setEditingName] = useState(false);
@@ -84,9 +84,26 @@ export default function AIBoard() {
             <div className="dashboard glass">
                 <div className="status-badge" style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: '0.3rem' }}>
                     <div className="players-row">
+                        <button
+                            className="profile-back-btn"
+                            style={{ position: 'relative', top: 0, left: 0, marginRight: '0.5rem' }}
+                            onClick={() => window.location.href = '/'}
+                            title={t('backHome')}
+                        >
+                            🏠
+                        </button>
+
                         <div className="player-tag">
                             <span className="icon-x" style={{ fontWeight: 'bold' }}>X</span>
+                            {playerStats && playerStats.avatar && (
+                                <span className="lb-avatar">{playerStats.avatar}</span>
+                            )}
                             <span>{playerName || t('you')}</span>
+                            {playerStats && playerStats.gamesPlayed > 0 && (
+                                <span className="lb-stats" style={{ marginLeft: '0.2rem' }}>
+                                    ({Math.round((playerStats.wins / playerStats.gamesPlayed) * 100)}%)
+                                </span>
+                            )}
                             {!editingName && (
                                 <button className="name-edit-btn" onClick={() => { setNameInput(playerName); setEditingName(true); }} title={t('editName')}>
                                     ✏️
@@ -96,7 +113,9 @@ export default function AIBoard() {
                         <span className="vs-text">VS</span>
                         <div className="player-tag">
                             <span className="icon-o" style={{ fontWeight: 'bold' }}>O</span>
-                            <span>🤖 AI</span>
+                            <span className="lb-avatar">🤖</span>
+                            <span>AI</span>
+                            <span className="lb-stats" style={{ marginLeft: '0.2rem' }}>(99%)</span>
                         </div>
                     </div>
                     {editingName && (

@@ -54,77 +54,81 @@ export default function Home() {
 
   return (
     <main>
-      <div className="glass" style={{ padding: '3rem', maxWidth: '500px', width: '100%', textAlign: 'center' }}>
-        <div className="header">
-          <h1>{t('title')}</h1>
-          <p>{t('subtitle')}</p>
+      <div className="home-container" style={{ padding: '2rem', maxWidth: '1000px', width: '100%', margin: '0 auto' }}>
+
+        {/* Play Card */}
+        <div className="glass home-card" style={{ padding: '3rem', flex: 1, textAlign: 'center' }}>
+          <div className="header">
+            <h1>{t('title')}</h1>
+            <p>{t('subtitle')}</p>
+          </div>
+
+          {/* Stats Badge */}
+          {stats && stats.gamesPlayed > 0 && (
+            <div className="stats-badge">
+              <div className="stat-item">
+                <span className="stat-value">{stats.wins}</span>
+                <span className="stat-label">{t('wins')}</span>
+              </div>
+              <div className="stat-divider" />
+              <div className="stat-item">
+                <span className="stat-value">{stats.losses}</span>
+                <span className="stat-label">{t('losses')}</span>
+              </div>
+              <div className="stat-divider" />
+              <div className="stat-item">
+                <span className="stat-value">{winRate}%</span>
+                <span className="stat-label">{t('winRate')}</span>
+              </div>
+            </div>
+          )}
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', marginTop: '2rem' }}>
+
+            {/* Mode Buttons */}
+            <div className="mode-buttons">
+              <button className="btn-primary mode-btn" onClick={createGame}>
+                <span className="mode-icon">👥</span>
+                <span className="mode-label">{t('playFriend')}</span>
+              </button>
+              <button className="btn-ai mode-btn" onClick={playAI}>
+                <span className="mode-icon">🤖</span>
+                <span className="mode-label">{t('playVsAI')}</span>
+              </button>
+            </div>
+
+            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+              <div style={{ flex: 1, height: '1px', backgroundColor: 'var(--grid-line-color)' }}></div>
+              <span style={{ opacity: 0.5 }}>{t('or')}</span>
+              <div style={{ flex: 1, height: '1px', backgroundColor: 'var(--grid-line-color)' }}></div>
+            </div>
+
+            <form onSubmit={joinGame} style={{ display: 'flex', gap: '1rem' }}>
+              <input
+                type="text"
+                placeholder={t('enterRoomId')}
+                value={roomId}
+                onChange={(e) => setRoomId(e.target.value)}
+                style={{
+                  flex: 1,
+                  padding: '0.8rem 1rem',
+                  borderRadius: '8px',
+                  border: '1px solid var(--grid-line-color)',
+                  outline: 'none',
+                  background: 'var(--background)',
+                  color: 'var(--text-color)',
+                }}
+              />
+              <button type="submit" className="btn-primary" disabled={!roomId.trim()}>
+                {t('join')}
+              </button>
+            </form>
+          </div>
         </div>
 
-        {/* Stats Badge */}
-        {stats && stats.gamesPlayed > 0 && (
-          <div className="stats-badge">
-            <div className="stat-item">
-              <span className="stat-value">{stats.wins}</span>
-              <span className="stat-label">{t('wins')}</span>
-            </div>
-            <div className="stat-divider" />
-            <div className="stat-item">
-              <span className="stat-value">{stats.losses}</span>
-              <span className="stat-label">{t('losses')}</span>
-            </div>
-            <div className="stat-divider" />
-            <div className="stat-item">
-              <span className="stat-value">{winRate}%</span>
-              <span className="stat-label">{t('winRate')}</span>
-            </div>
-          </div>
-        )}
-
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', marginTop: '2rem' }}>
-
-          {/* Mode Buttons */}
-          <div className="mode-buttons">
-            <button className="btn-primary mode-btn" onClick={createGame}>
-              <span className="mode-icon">👥</span>
-              <span className="mode-label">{t('playFriend')}</span>
-            </button>
-            <button className="btn-ai mode-btn" onClick={playAI}>
-              <span className="mode-icon">🤖</span>
-              <span className="mode-label">{t('playVsAI')}</span>
-            </button>
-          </div>
-
-          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-            <div style={{ flex: 1, height: '1px', backgroundColor: 'var(--grid-line-color)' }}></div>
-            <span style={{ opacity: 0.5 }}>{t('or')}</span>
-            <div style={{ flex: 1, height: '1px', backgroundColor: 'var(--grid-line-color)' }}></div>
-          </div>
-
-          <form onSubmit={joinGame} style={{ display: 'flex', gap: '1rem' }}>
-            <input
-              type="text"
-              placeholder={t('enterRoomId')}
-              value={roomId}
-              onChange={(e) => setRoomId(e.target.value)}
-              style={{
-                flex: 1,
-                padding: '0.8rem 1rem',
-                borderRadius: '8px',
-                border: '1px solid var(--grid-line-color)',
-                outline: 'none',
-                background: 'var(--background)',
-                color: 'var(--text-color)',
-              }}
-            />
-            <button type="submit" className="btn-primary" disabled={!roomId.trim()}>
-              {t('join')}
-            </button>
-          </form>
-        </div>
-
-        {/* Leaderboard */}
+        {/* Leaderboard Card */}
         {leaderboard.length > 0 && (
-          <div className="leaderboard">
+          <div className="glass home-card leaderboard" style={{ padding: '2rem', flex: 1, marginTop: 0 }}>
             <h3 className="leaderboard-title">🏆 {t('leaderboard')}</h3>
             <div className="leaderboard-list">
               {leaderboard.map((entry, index) => (

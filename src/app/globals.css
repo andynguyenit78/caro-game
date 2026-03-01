@@ -638,6 +638,27 @@ button {
   }
 }
 
+/* ===== Homepage Two-Card Layout ===== */
+.home-container {
+  display: flex;
+  gap: 2rem;
+  align-items: flex-start;
+}
+
+@media (max-width: 900px) {
+  .home-container {
+    flex-direction: column;
+    align-items: center;
+    gap: 1.5rem;
+  }
+
+  .home-card {
+    width: 100%;
+    max-width: 500px;
+  }
+}
+
+
 @media (max-width: 400px) {
   :root {
     --cell-size: 20px;

@@ -1,5 +1,5 @@
 'use client';
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { BoardState, Player, createEmptyBoard, checkWin } from '../lib/gameLogic';
 import { findBestMove } from '../lib/caroAI';
 
@@ -98,5 +98,20 @@ export function useAIGameState() {
         });
     }, []);
 
-    return { gameState, makeMove, resetGame };
+    const [playerStats, setPlayerStats] = useState<any>(null);
+    useEffect(() => {
+        const userId = localStorage.getItem('caroUserId');
+        if (!userId) return;
+
+        const { ref, onValue } = require('firebase/database');
+        const { db } = require('../lib/firebase');
+
+        const unsub = onValue(ref(db, `users/${userId}`), (snap: any) => {
+            setPlayerStats(snap.val());
+        });
+
+        return () => unsub();
+    }, []);
+
+    return { gameState, playerStats, makeMove, resetGame };
 }

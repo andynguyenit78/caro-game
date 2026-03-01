@@ -174,10 +174,37 @@ export function useGameState(roomId: string, userId: string) {
         await update(ref(db, `games/${roomId}`), updates);
     }, [roomId, myPlayerRole]);
 
+    // Fetch stats for both players
+    const [playersStats, setPlayersStats] = useState<{ X: any, O: any }>({ X: null, O: null });
+
+    useEffect(() => {
+        if (!gameState.players.X && !gameState.players.O) return;
+
+        let unsubX: () => void;
+        let unsubO: () => void;
+
+        if (gameState.players.X) {
+            unsubX = onValue(ref(db, `users/${gameState.players.X}`), snap => {
+                setPlayersStats(prev => ({ ...prev, X: snap.val() }));
+            });
+        }
+        if (gameState.players.O) {
+            unsubO = onValue(ref(db, `users/${gameState.players.O}`), snap => {
+                setPlayersStats(prev => ({ ...prev, O: snap.val() }));
+            });
+        }
+
+        return () => {
+            if (unsubX) unsubX();
+            if (unsubO) unsubO();
+        };
+    }, [gameState.players.X, gameState.players.O]);
+
     return {
         gameState,
         myPlayerRole,
         opponentName,
+        playersStats,
         makeMove,
         joinGame,
         resetGame,
