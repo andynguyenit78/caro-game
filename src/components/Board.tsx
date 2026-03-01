@@ -8,8 +8,9 @@ import { useLanguage } from '../context/LanguageContext';
 import { Player } from '../lib/gameLogic';
 import { playMoveSound, playVictorySound, playDefeatSound } from '../lib/sounds';
 import { updatePlayerName } from '../lib/playerStats';
+import { usePlayerSettings } from '../hooks/usePlayerSettings';
 
-const MOVE_TIMER_SECONDS = 30;
+const MOVE_TIMER_SECONDS = 30; // fallback default
 
 export default function Board({ roomId, userId }: { roomId: string; userId: string }) {
     const router = useRouter();
@@ -22,11 +23,13 @@ export default function Board({ roomId, userId }: { roomId: string; userId: stri
         joinGame,
         requestPlayAgain,
         quitGame,
+        handleTimeOut,
         hasRequestedPlayAgain,
         isMyTurn,
         lastMove,
     } = useGameState(roomId, userId);
     const { t } = useLanguage();
+    const { soundEnabled, timerSeconds } = usePlayerSettings();
     const [playerName, setPlayerName] = useState('');
     const [editingName, setEditingName] = useState(false);
     const [nameInput, setNameInput] = useState('');
@@ -46,18 +49,19 @@ export default function Board({ roomId, userId }: { roomId: string; userId: stri
         setPlayerName(localStorage.getItem('caroPlayerName') || '');
     }, []);
 
-    // Sound on move
+    // Sound on move — respect user sound setting
     useEffect(() => {
         const boardStr = JSON.stringify(gameState.board);
         if (
             prevBoardRef.current &&
             prevBoardRef.current !== boardStr &&
-            gameState.status !== 'loading'
+            gameState.status !== 'loading' &&
+            soundEnabled
         ) {
             playMoveSound();
         }
         prevBoardRef.current = boardStr;
-    }, [gameState.board, gameState.status]);
+    }, [gameState.board, gameState.status, soundEnabled]);
 
     // Sound on win/lose
     useEffect(() => {
@@ -71,21 +75,25 @@ export default function Board({ roomId, userId }: { roomId: string; userId: stri
         prevWinnerRef.current = gameState.winner;
     }, [gameState.winner, myPlayerRole]);
 
-    // Move timer
+    // Move timer — uses configurable duration from player settings
     useEffect(() => {
         if (gameState.status !== 'playing') {
-            setTimeLeft(MOVE_TIMER_SECONDS);
+            setTimeLeft(timerSeconds);
             return;
         }
-        setTimeLeft(MOVE_TIMER_SECONDS);
+        setTimeLeft(timerSeconds);
         const interval = setInterval(() => {
-            setTimeLeft((prev) => {
-                if (prev <= 1) return MOVE_TIMER_SECONDS;
-                return prev - 1;
-            });
+            setTimeLeft((prev) => prev - 1);
         }, 1000);
         return () => clearInterval(interval);
-    }, [gameState.status, gameState.currentPlayer]);
+    }, [gameState.status, gameState.currentPlayer, timerSeconds]);
+
+    // Auto-trigger timeout win when timer hits 0
+    useEffect(() => {
+        if (timeLeft <= 0 && gameState.status === 'playing') {
+            handleTimeOut();
+        }
+    }, [timeLeft, gameState.status, handleTimeOut]);
 
     // Auto-join
     useEffect(() => {

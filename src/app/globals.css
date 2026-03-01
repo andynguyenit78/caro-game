@@ -42,8 +42,31 @@ body {
     min-height: 100vh;
     display: flex;
     flex-direction: column;
-    transition: background-color 0.3s ease;
+    transition:
+        background-color 0.4s ease,
+        color 0.4s ease;
     overflow-x: hidden;
+}
+
+/* Theme / Language switch flash overlay */
+.theme-flash-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 99999;
+    pointer-events: none;
+    animation: themeFlash 0.35s ease-out forwards;
+}
+
+@keyframes themeFlash {
+    0% {
+        opacity: 0;
+    }
+    25% {
+        opacity: 0.35;
+    }
+    100% {
+        opacity: 0;
+    }
 }
 
 /* Glassmorphism Classes */

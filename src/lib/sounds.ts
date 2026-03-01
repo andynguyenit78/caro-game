@@ -15,12 +15,19 @@ function getAudioCtx() {
     return audioCtx;
 }
 
+function isSoundEnabled(): boolean {
+    if (typeof window === 'undefined') return true;
+    const stored = localStorage.getItem('caroSoundEnabled');
+    return stored === null ? true : stored === 'true';
+}
+
 function playTone(
     frequency: number,
     duration: number,
     type: OscillatorType = 'sine',
     volume = 0.15
 ) {
+    if (!isSoundEnabled()) return;
     const ctx = getAudioCtx();
     if (!ctx) return;
 
@@ -42,7 +49,7 @@ export function playMoveSound() {
 
 export function playVictorySound() {
     const ctx = getAudioCtx();
-    if (!ctx) return;
+    if (!ctx || !isSoundEnabled()) return;
     // Ascending chord: C E G C
     const notes = [523.25, 659.25, 783.99, 1046.5];
     notes.forEach((freq, i) => {
@@ -51,6 +58,7 @@ export function playVictorySound() {
 }
 
 export function playDefeatSound() {
+    if (!isSoundEnabled()) return;
     // Descending sad tones
     const notes = [400, 350, 300, 250];
     notes.forEach((freq, i) => {

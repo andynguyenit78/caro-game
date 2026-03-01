@@ -52,10 +52,26 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
         document.documentElement.setAttribute('data-theme', resolvedTheme);
     }, [resolvedTheme]);
 
-    const setMode = useCallback((m: ThemeMode) => {
-        setModeState(m);
-        localStorage.setItem('caroTheme', m);
-    }, []);
+    const setMode = useCallback(
+        (m: ThemeMode) => {
+            setModeState(m);
+            localStorage.setItem('caroTheme', m);
+
+            // Brief flash overlay for a polished theme-switch transition
+            if (typeof document !== 'undefined') {
+                const overlay = document.createElement('div');
+                const flashColor =
+                    m === 'dark' || (m === 'system' && systemPreference === 'dark')
+                        ? 'rgba(0,0,0,0.6)'
+                        : 'rgba(255,255,255,0.6)';
+                overlay.style.background = flashColor;
+                overlay.className = 'theme-flash-overlay';
+                document.body.appendChild(overlay);
+                setTimeout(() => overlay.remove(), 400);
+            }
+        },
+        [systemPreference]
+    );
 
     return (
         <ThemeContext.Provider value={{ mode, setMode, resolvedTheme }}>

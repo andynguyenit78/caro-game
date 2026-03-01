@@ -69,6 +69,12 @@ export const translations = {
         gamesPlayed: 'Games',
         saved: 'Saved!',
         saveProfile: 'Save Profile',
+
+        // Settings
+        sound: 'Sound',
+        soundOn: 'On',
+        soundOff: 'Off',
+        timerDuration: 'Move Timer',
     },
     vi: {
         // Home / Lobby
@@ -138,6 +144,12 @@ export const translations = {
         gamesPlayed: 'Trận',
         saved: 'Đã lưu!',
         saveProfile: 'Lưu hồ sơ',
+
+        // Settings
+        sound: 'Âm thanh',
+        soundOn: 'Bật',
+        soundOff: 'Tắt',
+        timerDuration: 'Tử giờ di động',
     },
 } as const;
 

@@ -24,6 +24,15 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
         setLanguageState(lang);
         localStorage.setItem('caroLanguage', lang);
         document.documentElement.setAttribute('lang', lang);
+
+        // Brief flash overlay for a polished language-switch transition
+        if (typeof document !== 'undefined') {
+            const overlay = document.createElement('div');
+            overlay.style.background = 'rgba(120,120,180,0.25)';
+            overlay.className = 'theme-flash-overlay';
+            document.body.appendChild(overlay);
+            setTimeout(() => overlay.remove(), 400);
+        }
     }, []);
 
     const t = useCallback(

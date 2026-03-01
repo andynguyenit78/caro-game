@@ -8,6 +8,7 @@ import {
     updatePlayerAvatar,
     PlayerStats,
 } from '../../lib/playerStats';
+import { usePlayerSettings, TIMER_OPTIONS } from '../../hooks/usePlayerSettings';
 
 const AVATAR_OPTIONS = [
     '😀',
@@ -81,6 +82,8 @@ export default function ProfilePage() {
     const winRate =
         stats && stats.gamesPlayed > 0 ? Math.round((stats.wins / stats.gamesPlayed) * 100) : 0;
 
+    const { soundEnabled, timerSeconds, setSoundEnabled, setTimerSeconds } = usePlayerSettings();
+
     return (
         <main>
             <div className="glass profile-card">
@@ -150,6 +153,40 @@ export default function ProfilePage() {
                         </div>
                     </div>
                 )}
+
+                {/* Game Settings */}
+                <div className="profile-field">
+                    <label className="profile-label">🔔 {t('sound')}</label>
+                    <div className="toggle-pills">
+                        <button
+                            className={`pill ${soundEnabled ? 'active' : ''}`}
+                            onClick={() => setSoundEnabled(true)}
+                        >
+                            {t('soundOn')}
+                        </button>
+                        <button
+                            className={`pill ${!soundEnabled ? 'active' : ''}`}
+                            onClick={() => setSoundEnabled(false)}
+                        >
+                            {t('soundOff')}
+                        </button>
+                    </div>
+                </div>
+
+                <div className="profile-field">
+                    <label className="profile-label">⏱ {t('timerDuration')}</label>
+                    <div className="toggle-pills">
+                        {TIMER_OPTIONS.map((s) => (
+                            <button
+                                key={s}
+                                className={`pill ${timerSeconds === s ? 'active' : ''}`}
+                                onClick={() => setTimerSeconds(s)}
+                            >
+                                {s}s
+                            </button>
+                        ))}
+                    </div>
+                </div>
 
                 {/* Save Button */}
                 <button

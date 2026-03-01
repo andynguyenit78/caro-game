@@ -180,6 +180,13 @@ export function useGameState(roomId: string, userId: string) {
         await updateGameState(roomId, { quit: true });
     }, [roomId, myPlayerRole]);
 
+    const handleTimeOut = useCallback(async () => {
+        // The player whose turn it is ran out of time — opponent wins
+        if (gameState.status !== 'playing') return;
+        const winner = gameState.currentPlayer === 'X' ? 'O' : 'X';
+        await updateGameState(roomId, { status: 'finished', winner });
+    }, [roomId, gameState.status, gameState.currentPlayer]);
+
     // Fetch stats for both players
     const [playersStats, setPlayersStats] = useState<{
         X: PlayerStats | null;
@@ -218,6 +225,7 @@ export function useGameState(roomId: string, userId: string) {
         joinGame,
         requestPlayAgain,
         quitGame,
+        handleTimeOut,
         hasRequestedPlayAgain: gameState.playAgain?.[myPlayerRole as 'X' | 'O'] === true,
         isMyTurn: gameState.currentPlayer === myPlayerRole,
         lastMove: gameState.lastMove || null,
