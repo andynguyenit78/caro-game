@@ -9,7 +9,7 @@ import {
     PlayerStats,
     LeaderboardEntry,
 } from '../lib/playerStats';
-import { getRankFromScore, getRankIcon } from '../lib/rankSystem';
+import { getRankFromScore, getRankIcon, getRankTitle } from '../lib/rankSystem';
 
 export default function Home() {
     const router = useRouter();
@@ -18,7 +18,7 @@ export default function Home() {
     const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
     const [isLoadingStats, setIsLoadingStats] = useState(true);
     const [isLoadingLeaderboard, setIsLoadingLeaderboard] = useState(true);
-    const { t } = useLanguage();
+    const { t, language } = useLanguage();
 
     useEffect(() => {
         if (typeof window === 'undefined') return;
@@ -68,6 +68,7 @@ export default function Home() {
     const myScore = stats?.score ?? 0;
     const myRank = getRankFromScore(myScore);
     const myRankIcon = getRankIcon(myScore);
+    const myRankTitle = getRankTitle(myScore, language);
 
     const myUserId = typeof window !== 'undefined' ? localStorage.getItem('caroUserId') : null;
 
@@ -94,7 +95,7 @@ export default function Home() {
                         <div className="rank-card">
                             <span className="rank-card-icon">{myRankIcon}</span>
                             <div className="rank-card-info">
-                                <span className="rank-card-title">{myRank.title}</span>
+                                <span className="rank-card-title">{myRankTitle}</span>
                                 <span className="rank-card-score">{myScore} pts</span>
                             </div>
                         </div>
@@ -239,8 +240,18 @@ export default function Home() {
                                               <span className="lb-avatar">{entry.avatar}</span>
                                           )}
                                           <span className="lb-name">{entry.name}</span>
-                                          <span className="lb-rank-badge" title={entry.rankTitle}>
-                                              {getRankIcon(entry.score)} {entry.rankTitle}
+                                          <span
+                                              className="lb-rank-badge"
+                                              title={
+                                                  language === 'en'
+                                                      ? entry.rankTitleEn
+                                                      : entry.rankTitle
+                                              }
+                                          >
+                                              {getRankIcon(entry.score)}{' '}
+                                              {language === 'en'
+                                                  ? entry.rankTitleEn
+                                                  : entry.rankTitle}
                                           </span>
                                           <span className="lb-score">{entry.score} pts</span>
                                       </div>

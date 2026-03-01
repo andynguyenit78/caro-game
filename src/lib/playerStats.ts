@@ -160,7 +160,8 @@ export interface LeaderboardEntry {
     winRate: number;
     score: number;
     level: number;
-    rankTitle: string;
+    rankTitle: string; // Vietnamese
+    rankTitleEn: string; // English
 }
 
 /** Shared helper: convert raw Firebase user map → sorted LeaderboardEntry array. */
@@ -185,6 +186,7 @@ function buildLeaderboard(usersVal: Record<string, unknown>, limit: number): Lea
             score,
             level: rank.level,
             rankTitle: rank.title,
+            rankTitleEn: rank.titleEn,
         });
     }
 

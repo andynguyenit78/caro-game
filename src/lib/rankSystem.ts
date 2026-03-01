@@ -9,19 +9,22 @@
 
 export interface RankThreshold {
     level: number;
+    /** Vietnamese title */
     title: string;
+    /** English title */
+    titleEn: string;
     minScore: number;
 }
 
 export const RANK_CONFIG: RankThreshold[] = [
-    { level: 1, title: 'Tân thủ', minScore: 0 },
-    { level: 2, title: 'Kỳ thủ', minScore: 500 },
-    { level: 3, title: 'Cao thủ', minScore: 1200 },
-    { level: 4, title: 'Siêu cao thủ', minScore: 1800 },
-    { level: 5, title: 'Kiện tướng', minScore: 2400 },
-    { level: 6, title: 'Đại kiện tướng', minScore: 3000 },
-    { level: 7, title: 'Kỳ tiên', minScore: 3800 },
-    { level: 8, title: 'Kỳ thánh', minScore: 4500 },
+    { level: 1, title: 'Tân thủ', titleEn: 'Novice', minScore: 0 },
+    { level: 2, title: 'Kỳ thủ', titleEn: 'Apprentice', minScore: 500 },
+    { level: 3, title: 'Cao thủ', titleEn: 'Expert', minScore: 1200 },
+    { level: 4, title: 'Siêu cao thủ', titleEn: 'Master', minScore: 1800 },
+    { level: 5, title: 'Kiện tướng', titleEn: 'Grandmaster', minScore: 2400 },
+    { level: 6, title: 'Đại kiện tướng', titleEn: 'Elite', minScore: 3000 },
+    { level: 7, title: 'Kỳ tiên', titleEn: 'Legend', minScore: 3800 },
+    { level: 8, title: 'Kỳ thánh', titleEn: 'Immortal', minScore: 4500 },
 ];
 
 /** Score constants */
@@ -54,11 +57,20 @@ export function getLevelFromScore(score: number): number {
 }
 
 /**
- * Return the icon emoji for a given score.
+ * Return the rank icon emoji for a given score.
  */
 export function getRankIcon(score: number): string {
     const level = getLevelFromScore(score);
     return RANK_ICONS[level - 1];
+}
+
+/**
+ * Return the localized rank title for a given score.
+ * @param language - 'en' | 'vi'
+ */
+export function getRankTitle(score: number, language: 'en' | 'vi' = 'vi'): string {
+    const rank = getRankFromScore(score);
+    return language === 'en' ? rank.titleEn : rank.title;
 }
 
 // ─── Score Calculation ───────────────────────────────────────────────────────

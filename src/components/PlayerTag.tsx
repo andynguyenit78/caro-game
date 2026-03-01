@@ -1,7 +1,8 @@
 'use client';
 import React from 'react';
 import { PlayerStats } from '../lib/playerStats';
-import { getRankFromScore, getRankIcon } from '../lib/rankSystem';
+import { getRankFromScore, getRankIcon, getRankTitle } from '../lib/rankSystem';
+import { useLanguage } from '../context/LanguageContext';
 
 interface PlayerTagProps {
     /** Player role identifier ('X' or 'O') */
@@ -27,10 +28,12 @@ export default function PlayerTag({
     isEditable = false,
     onEditClick,
 }: PlayerTagProps) {
+    const { language } = useLanguage();
     const roleColorClass = role === 'X' ? 'icon-x' : 'icon-o';
     const score = stats?.score ?? 0;
     const rank = getRankFromScore(score);
     const rankIcon = getRankIcon(score);
+    const rankTitle = getRankTitle(score, language);
 
     return (
         <div className="player-tag">
@@ -43,9 +46,9 @@ export default function PlayerTag({
             <span>{displayName}</span>
 
             {stats && (
-                <span className="rank-badge" title={`${rank.title} — ${score} pts`}>
+                <span className="rank-badge" title={`${rankTitle} — ${score} pts`}>
                     {rankIcon}
-                    <span className="rank-level">{rank.title}</span>
+                    <span className="rank-level">{rankTitle}</span>
                 </span>
             )}
 
