@@ -93,8 +93,8 @@ export function checkWin(
 
 /**
  * Determine whether placing `player` at (`row`, `col`) creates a threatening line
- * of exactly 4 consecutive pieces in any direction.
- * Returns the warning line of coordinates, or null if no threat.
+ * of exactly 4 pieces and 1 empty space in any 5-cell window.
+ * Returns the array of coordinates of the pieces causing the warning, or null if no threat.
  */
 export function checkWarning(
     board: BoardState,
@@ -103,15 +103,57 @@ export function checkWarning(
     player: Player
 ): [number, number][] | null {
     if (player === '') return null;
+    const totalRows = board.length;
+    const totalCols = board[0].length;
+
+    const warningCells: [number, number][] = [];
 
     for (const [rowDelta, colDelta] of WIN_DIRECTIONS) {
-        const line = getConsecutiveLine(board, row, col, rowDelta, colDelta, player);
-        if (line.length === 4) {
-            return line;
+        for (let offset = 0; offset < WIN_LENGTH; offset++) {
+            const startRow = row - rowDelta * offset;
+            const startCol = col - colDelta * offset;
+            const endRow = startRow + rowDelta * (WIN_LENGTH - 1);
+            const endCol = startCol + colDelta * (WIN_LENGTH - 1);
+
+            if (
+                startRow >= 0 &&
+                startRow < totalRows &&
+                startCol >= 0 &&
+                startCol < totalCols &&
+                endRow >= 0 &&
+                endRow < totalRows &&
+                endCol >= 0 &&
+                endCol < totalCols
+            ) {
+                let playerCount = 0;
+                let emptyCount = 0;
+                const pieces: [number, number][] = [];
+
+                for (let step = 0; step < WIN_LENGTH; step++) {
+                    const r = startRow + rowDelta * step;
+                    const c = startCol + colDelta * step;
+                    const cell = board[r][c];
+
+                    if (cell === player) {
+                        playerCount++;
+                        pieces.push([r, c]);
+                    } else if (cell === '') {
+                        emptyCount++;
+                    }
+                }
+
+                if (playerCount === 4 && emptyCount === 1) {
+                    for (const p of pieces) {
+                        if (!warningCells.some((wc) => wc[0] === p[0] && wc[1] === p[1])) {
+                            warningCells.push(p);
+                        }
+                    }
+                }
+            }
         }
     }
 
-    return null;
+    return warningCells.length > 0 ? warningCells : null;
 }
 
 /**

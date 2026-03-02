@@ -149,48 +149,6 @@ export default function Board({ roomId, userId }: { roomId: string; userId: stri
         return isMyTurn ? t('yourTurn') : t('opponentTurn');
     })();
 
-    const renderWinningLine = () => {
-        const line = gameState.winningLine || gameState.warningLine;
-        const isWarning = !gameState.winningLine && !!gameState.warningLine;
-        if (!line || line.length < 4) return null;
-
-        const start = line[0];
-        const end = line[line.length - 1];
-        const offset = 100 / 15;
-
-        const startX = `${(start[1] + 0.5) * offset}%`;
-        const startY = `${(start[0] + 0.5) * offset}%`;
-        const endX = `${(end[1] + 0.5) * offset}%`;
-        const endY = `${(end[0] + 0.5) * offset}%`;
-
-        const playerAtStart = gameState.board[start[0]][start[1]];
-        const strokeColor =
-            playerAtStart === 'X' ? 'var(--player-x-color)' : 'var(--player-o-color)';
-
-        return (
-            <svg
-                style={{
-                    position: 'absolute',
-                    inset: 0,
-                    width: '100%',
-                    height: '100%',
-                    pointerEvents: 'none',
-                    zIndex: 10,
-                }}
-            >
-                <line
-                    x1={startX}
-                    y1={startY}
-                    x2={endX}
-                    y2={endY}
-                    pathLength="100"
-                    className={isWarning ? 'warning-slash' : 'winning-slash'}
-                    stroke={strokeColor}
-                />
-            </svg>
-        );
-    };
-
     const isTimerDanger = timeLeft <= 10;
 
     // ── Handlers ─────────────────────────────────────────────────────────────
@@ -275,11 +233,26 @@ export default function Board({ roomId, userId }: { roomId: string; userId: stri
                 {gameState.board.map((row: Player[], rowIndex: number) =>
                     row.map((cell: Player, colIndex: number) => {
                         const isLastMove =
-                            lastMove && lastMove[0] === rowIndex && lastMove[1] === colIndex;
+                            gameState.lastMove &&
+                            gameState.lastMove[0] === rowIndex &&
+                            gameState.lastMove[1] === colIndex;
+                        const isWinningCell = gameState.winningLine?.some(
+                            ([wRow, wCol]) => wRow === rowIndex && wCol === colIndex
+                        );
+                        const isWarningCell =
+                            !gameState.winningLine &&
+                            gameState.warningLine?.some(
+                                ([wRow, wCol]) => wRow === rowIndex && wCol === colIndex
+                            );
+                        const warningPlayer =
+                            isWarningCell && gameState.lastMove
+                                ? gameState.board[gameState.lastMove[0]][gameState.lastMove[1]]
+                                : '';
+
                         return (
                             <div
                                 key={`${rowIndex}-${colIndex}`}
-                                className={`cell ${isLastMove ? 'cell-last-move' : ''}`}
+                                className={`cell ${isLastMove ? 'cell-last-move' : ''} ${isWinningCell ? `cell-winning cell-winning-${gameState.winner}` : ''} ${isWarningCell ? `cell-warning cell-warning-${warningPlayer}` : ''}`}
                                 onClick={() => makeMove(rowIndex, colIndex)}
                             >
                                 {cell === 'X' && <IconX className="cell-icon icon-x" />}
@@ -297,7 +270,6 @@ export default function Board({ roomId, userId }: { roomId: string; userId: stri
                         );
                     })
                 )}
-                {renderWinningLine()}
 
                 {floatingEmotes.map((emote) => (
                     <div

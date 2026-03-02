@@ -314,57 +314,67 @@ main h1 span {
     }
 }
 
-.winning-slash {
-    stroke-dasharray: 100;
-    stroke-dashoffset: 100;
-    animation: slashStrike 0.6s ease-out forwards;
-    filter: drop-shadow(0 0 10px currentColor);
-    stroke-width: 8px;
-    stroke-linecap: round;
+.cell-winning-X {
+    --halo-color: var(--player-x-color);
 }
 
-@keyframes slashStrike {
-    to {
-        stroke-dashoffset: 0;
-    }
-}
-
-.warning-slash {
-    stroke-dasharray: 100;
-    stroke-dashoffset: 100;
-    animation:
-        slashStrike 0.6s ease-out forwards,
-        warningPulse 1.5s infinite alternate;
-    filter: drop-shadow(0 0 5px currentColor);
-    stroke-width: 6px;
-    stroke-linecap: round;
-}
-
-@keyframes warningPulse {
-    from {
-        opacity: 0.3;
-    }
-
-    to {
-        opacity: 0.8;
-    }
+.cell-winning-O {
+    --halo-color: var(--player-o-color);
 }
 
 .cell-winning {
-    animation: winPulse 1.5s ease-in-out infinite;
+    animation: goldenHalo 2s infinite alternate ease-in-out;
     z-index: 5;
+    position: relative;
+    /* Ensure it stays above normal cells */
 }
 
-@keyframes winPulse {
-    0%,
-    100% {
+@keyframes goldenHalo {
+    0% {
+        box-shadow:
+            0 0 10px 2px var(--halo-color),
+            inset 0 0 10px 2px var(--halo-color);
+        background-color: color-mix(in srgb, var(--halo-color) 5%, transparent);
         transform: scale(1);
-        filter: brightness(1);
     }
 
-    50% {
-        transform: scale(1.1);
-        filter: brightness(1.3);
+    100% {
+        box-shadow:
+            0 0 25px 8px var(--halo-color),
+            inset 0 0 20px 5px var(--halo-color);
+        background-color: color-mix(in srgb, var(--halo-color) 20%, transparent);
+        transform: scale(1.05);
+        /* Slight pop */
+    }
+}
+
+.cell-warning-X {
+    --warning-halo: var(--player-x-color);
+}
+
+.cell-warning-O {
+    --warning-halo: var(--player-o-color);
+}
+
+.cell-warning {
+    animation: warningHalo 1.5s infinite alternate ease-in-out;
+    z-index: 4;
+    position: relative;
+}
+
+@keyframes warningHalo {
+    0% {
+        box-shadow:
+            0 0 5px 1px var(--warning-halo),
+            inset 0 0 5px 1px var(--warning-halo);
+        background-color: color-mix(in srgb, var(--warning-halo) 5%, transparent);
+    }
+
+    100% {
+        box-shadow:
+            0 0 15px 4px var(--warning-halo),
+            inset 0 0 10px 2px var(--warning-halo);
+        background-color: color-mix(in srgb, var(--warning-halo) 15%, transparent);
     }
 }
 
