@@ -167,54 +167,62 @@ export default function AIBoard() {
                         gameState.status !== 'playing' || gameState.aiThinking ? 'none' : 'auto',
                 }}
             >
-                {gameState.board.map((row: Player[], rowIndex: number) =>
-                    row.map((cell: Player, colIndex: number) => {
-                        const isLastMove =
-                            gameState.lastMove &&
-                            gameState.lastMove[0] === rowIndex &&
-                            gameState.lastMove[1] === colIndex;
-                        const winningIndex =
-                            gameState.winningLine?.findIndex(
-                                ([wRow, wCol]) => wRow === rowIndex && wCol === colIndex
-                            ) ?? -1;
-                        const isWinningCell = winningIndex >= 0;
-                        const warningIndex = !gameState.winningLine
-                            ? (gameState.warningLine?.findIndex(
-                                  ([wRow, wCol]) => wRow === rowIndex && wCol === colIndex
-                              ) ?? -1)
-                            : -1;
-                        const isWarningCell = warningIndex >= 0;
-                        const popDelay = isWinningCell
-                            ? winningIndex * 0.12
-                            : isWarningCell
-                              ? warningIndex * 0.12
-                              : 0;
-                        const warningPlayer = isWarningCell ? cell : '';
+                {(() => {
+                    const winningMap = new Map(
+                        gameState.winningLine?.map((p, i) => [`${p[0]}-${p[1]}`, i]) || []
+                    );
+                    const warningMap = new Map(
+                        !gameState.winningLine
+                            ? gameState.warningLine?.map((p, i) => [`${p[0]}-${p[1]}`, i]) || []
+                            : []
+                    );
 
-                        return (
-                            <div
-                                key={`${rowIndex}-${colIndex}`}
-                                className={`cell ${isLastMove ? 'cell-last-move' : ''} ${isWinningCell ? `cell-winning cell-winning-${gameState.winner}` : ''} ${isWarningCell ? `cell-warning cell-warning-${warningPlayer}` : ''}`}
-                                style={
-                                    isWinningCell || isWarningCell
-                                        ? { animationDelay: `${popDelay}s` }
-                                        : undefined
-                                }
-                                onClick={() => makeMove(rowIndex, colIndex)}
-                            >
-                                {cell === 'X' && <IconX className="cell-icon icon-x" />}
-                                {cell === 'O' && <IconO className="cell-icon icon-o" />}
-                                {cell === '' &&
-                                    !gameState.aiThinking &&
-                                    gameState.status === 'playing' && (
-                                        <div className="ghost-icon">
-                                            <IconX className="cell-icon icon-x" />
-                                        </div>
-                                    )}
-                            </div>
-                        );
-                    })
-                )}
+                    return gameState.board.map((row: Player[], rowIndex: number) =>
+                        row.map((cell: Player, colIndex: number) => {
+                            const key = `${rowIndex}-${colIndex}`;
+                            const isLastMove =
+                                gameState.lastMove &&
+                                gameState.lastMove[0] === rowIndex &&
+                                gameState.lastMove[1] === colIndex;
+
+                            const winningIndex = winningMap.get(key) ?? -1;
+                            const isWinningCell = winningIndex >= 0;
+
+                            const warningIndex = warningMap.get(key) ?? -1;
+                            const isWarningCell = warningIndex >= 0;
+
+                            const popDelay = isWinningCell
+                                ? winningIndex * 0.12
+                                : isWarningCell
+                                  ? warningIndex * 0.12
+                                  : 0;
+                            const warningPlayer = isWarningCell ? cell : '';
+
+                            return (
+                                <div
+                                    key={key}
+                                    className={`cell ${isLastMove ? 'cell-last-move' : ''} ${isWinningCell ? `cell-winning cell-winning-${gameState.winner}` : ''} ${isWarningCell ? `cell-warning cell-warning-${warningPlayer}` : ''}`}
+                                    style={
+                                        isWinningCell || isWarningCell
+                                            ? { animationDelay: `${popDelay}s` }
+                                            : undefined
+                                    }
+                                    onClick={() => makeMove(rowIndex, colIndex)}
+                                >
+                                    {cell === 'X' && <IconX className="cell-icon icon-x" />}
+                                    {cell === 'O' && <IconO className="cell-icon icon-o" />}
+                                    {cell === '' &&
+                                        !gameState.aiThinking &&
+                                        gameState.status === 'playing' && (
+                                            <div className="ghost-icon">
+                                                <IconX className="cell-icon icon-x" />
+                                            </div>
+                                        )}
+                                </div>
+                            );
+                        })
+                    );
+                })()}
 
                 {floatingEmotes.map((emote) => (
                     <div

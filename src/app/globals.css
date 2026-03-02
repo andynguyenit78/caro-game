@@ -335,7 +335,6 @@ main h1 span {
 .cell-warning .cell-icon {
     animation: sequentialPop 1.5s ease-in-out infinite;
     animation-delay: inherit;
-    will-change: transform, filter;
 }
 
 @keyframes sequentialPop {
