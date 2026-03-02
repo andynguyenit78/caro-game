@@ -314,15 +314,18 @@ main h1 span {
     }
 }
 
-.cell-winning-X {
+.cell-winning-X,
+.cell-warning-X {
     --halo-color: var(--player-x-color);
 }
 
-.cell-winning-O {
+.cell-winning-O,
+.cell-warning-O {
     --halo-color: var(--player-o-color);
 }
 
-.cell-winning {
+.cell-winning,
+.cell-warning {
     animation: goldenHalo 2s infinite alternate ease-in-out;
     z-index: 5;
     position: relative;
@@ -345,36 +348,6 @@ main h1 span {
         background-color: color-mix(in srgb, var(--halo-color) 20%, transparent);
         transform: scale(1.05);
         /* Slight pop */
-    }
-}
-
-.cell-warning-X {
-    --warning-halo: var(--player-x-color);
-}
-
-.cell-warning-O {
-    --warning-halo: var(--player-o-color);
-}
-
-.cell-warning {
-    animation: warningHalo 1.5s infinite alternate ease-in-out;
-    z-index: 4;
-    position: relative;
-}
-
-@keyframes warningHalo {
-    0% {
-        box-shadow:
-            0 0 5px 1px var(--warning-halo),
-            inset 0 0 5px 1px var(--warning-halo);
-        background-color: color-mix(in srgb, var(--warning-halo) 5%, transparent);
-    }
-
-    100% {
-        box-shadow:
-            0 0 15px 4px var(--warning-halo),
-            inset 0 0 10px 2px var(--warning-halo);
-        background-color: color-mix(in srgb, var(--warning-halo) 15%, transparent);
     }
 }
 
