@@ -173,23 +173,36 @@ export default function AIBoard() {
                             gameState.lastMove &&
                             gameState.lastMove[0] === rowIndex &&
                             gameState.lastMove[1] === colIndex;
-                        const isWinningCell = gameState.winningLine?.some(
-                            ([wRow, wCol]) => wRow === rowIndex && wCol === colIndex
-                        );
-                        const isWarningCell =
-                            !gameState.winningLine &&
-                            gameState.warningLine?.some(
+                        const winningIndex =
+                            gameState.winningLine?.findIndex(
                                 ([wRow, wCol]) => wRow === rowIndex && wCol === colIndex
-                            );
+                            ) ?? -1;
+                        const isWinningCell = winningIndex >= 0;
+                        const warningIndex = !gameState.winningLine
+                            ? (gameState.warningLine?.findIndex(
+                                  ([wRow, wCol]) => wRow === rowIndex && wCol === colIndex
+                              ) ?? -1)
+                            : -1;
+                        const isWarningCell = warningIndex >= 0;
                         const warningPlayer =
                             isWarningCell && gameState.lastMove
                                 ? gameState.board[gameState.lastMove[0]][gameState.lastMove[1]]
                                 : '';
+                        const popDelay = isWinningCell
+                            ? winningIndex * 0.12
+                            : isWarningCell
+                              ? warningIndex * 0.12
+                              : 0;
 
                         return (
                             <div
                                 key={`${rowIndex}-${colIndex}`}
                                 className={`cell ${isLastMove ? 'cell-last-move' : ''} ${isWinningCell ? `cell-winning cell-winning-${gameState.winner}` : ''} ${isWarningCell ? `cell-warning cell-warning-${warningPlayer}` : ''}`}
+                                style={
+                                    isWinningCell || isWarningCell
+                                        ? { animationDelay: `${popDelay}s` }
+                                        : undefined
+                                }
                                 onClick={() => makeMove(rowIndex, colIndex)}
                             >
                                 {cell === 'X' && <IconX className="cell-icon icon-x" />}

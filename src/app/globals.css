@@ -326,28 +326,37 @@ main h1 span {
 
 .cell-winning,
 .cell-warning {
-    animation: goldenHalo 2s infinite alternate ease-in-out;
     z-index: 5;
     position: relative;
-    /* Ensure it stays above normal cells */
+    /* Parent holds the delay, child icon animates */
 }
 
-@keyframes goldenHalo {
+.cell-winning .cell-icon,
+.cell-warning .cell-icon {
+    animation: sequentialPop 1.5s ease-in-out infinite;
+    animation-delay: inherit;
+    will-change: transform, filter;
+}
+
+@keyframes sequentialPop {
     0% {
-        box-shadow:
-            0 0 10px 2px var(--halo-color),
-            inset 0 0 10px 2px var(--halo-color);
-        background-color: color-mix(in srgb, var(--halo-color) 5%, transparent);
         transform: scale(1);
+        filter: drop-shadow(0 0 0 transparent);
+    }
+
+    20% {
+        transform: scale(1.3);
+        filter: drop-shadow(0 0 10px var(--halo-color));
+    }
+
+    40% {
+        transform: scale(1);
+        filter: drop-shadow(0 0 5px var(--halo-color));
     }
 
     100% {
-        box-shadow:
-            0 0 25px 8px var(--halo-color),
-            inset 0 0 20px 5px var(--halo-color);
-        background-color: color-mix(in srgb, var(--halo-color) 20%, transparent);
-        transform: scale(1.05);
-        /* Slight pop */
+        transform: scale(1);
+        filter: drop-shadow(0 0 0 transparent);
     }
 }
 
