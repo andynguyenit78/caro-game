@@ -1,6 +1,6 @@
 'use client';
 import { useState, useCallback, useEffect } from 'react';
-import { BoardState, Player, createEmptyBoard, checkWin, checkWarning } from '../lib/gameLogic';
+import { BoardState, Player, createEmptyBoard, checkWin, findAllWarnings } from '../lib/gameLogic';
 import { findBestMove } from '../lib/caroAI';
 import { subscribeToStats, PlayerStats } from '../lib/playerStats';
 
@@ -60,7 +60,7 @@ export function useAIGameState() {
                 };
             }
 
-            const warningLine = checkWarning(newBoard, row, col, 'X');
+            const warningLine = findAllWarnings(newBoard);
 
             // Set AI thinking state
             return {
@@ -98,7 +98,7 @@ export function useAIGameState() {
                     };
                 }
 
-                const aiWarningLine = checkWarning(newBoard, aiRow, aiCol, 'O');
+                const aiWarningLine = findAllWarnings(newBoard);
 
                 return {
                     ...prev,

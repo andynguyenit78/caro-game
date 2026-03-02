@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
-import { Player, createEmptyBoard, checkWin, checkWarning } from '../lib/gameLogic';
+import { Player, createEmptyBoard, checkWin, findAllWarnings } from '../lib/gameLogic';
 import { PlayerStats, recordGameResult, updatePlayerName } from '../lib/playerStats';
 import {
     GameState,
@@ -239,7 +239,7 @@ export function useGameState(roomId: string, userId: string) {
             newBoard[row][col] = myPlayerRole;
 
             const winningLine = checkWin(newBoard, row, col, myPlayerRole);
-            const warningLine = winningLine ? null : checkWarning(newBoard, row, col, myPlayerRole);
+            const warningLine = findAllWarnings(newBoard);
             const won = !!winningLine;
             const nextPlayer = myPlayerRole === 'X' ? 'O' : 'X';
 
@@ -249,9 +249,8 @@ export function useGameState(roomId: string, userId: string) {
                 winner: won ? myPlayerRole : '',
                 status: won ? 'finished' : 'playing',
                 lastMove: [row, col],
-                ...(won
-                    ? { winningLine, warningLine: null }
-                    : { warningLine: warningLine || null }),
+                winningLine: winningLine || null,
+                warningLine: winningLine ? null : warningLine,
             });
         },
         [roomId, gameState, myPlayerRole]

@@ -184,15 +184,12 @@ export default function AIBoard() {
                               ) ?? -1)
                             : -1;
                         const isWarningCell = warningIndex >= 0;
-                        const warningPlayer =
-                            isWarningCell && gameState.lastMove
-                                ? gameState.board[gameState.lastMove[0]][gameState.lastMove[1]]
-                                : '';
                         const popDelay = isWinningCell
                             ? winningIndex * 0.12
                             : isWarningCell
                               ? warningIndex * 0.12
                               : 0;
+                        const warningPlayer = isWarningCell ? cell : '';
 
                         return (
                             <div

@@ -92,60 +92,53 @@ export function checkWin(
 }
 
 /**
- * Determine whether placing `player` at (`row`, `col`) creates a threatening line
- * of exactly 4 pieces and 1 empty space in any 5-cell window.
- * Returns the array of coordinates of the pieces causing the warning, or null if no threat.
+ * Scan the entire board and find all 4-in-a-row threats for both players.
+ * A threat is a 5-cell window containing 4 pieces of one player and 1 empty space.
+ * Returns a list of all coordinates involved in such threats.
  */
-export function checkWarning(
-    board: BoardState,
-    row: number,
-    col: number,
-    player: Player
-): [number, number][] | null {
-    if (player === '') return null;
+export function findAllWarnings(board: BoardState): [number, number][] {
     const totalRows = board.length;
     const totalCols = board[0].length;
-
     const warningCells: [number, number][] = [];
 
+    // Check all directions
     for (const [rowDelta, colDelta] of WIN_DIRECTIONS) {
-        for (let offset = 0; offset < WIN_LENGTH; offset++) {
-            const startRow = row - rowDelta * offset;
-            const startCol = col - colDelta * offset;
-            const endRow = startRow + rowDelta * (WIN_LENGTH - 1);
-            const endCol = startCol + colDelta * (WIN_LENGTH - 1);
+        for (let r = 0; r < totalRows; r++) {
+            for (let c = 0; c < totalCols; c++) {
+                // Determine the end of the 5-cell window
+                const endR = r + rowDelta * (WIN_LENGTH - 1);
+                const endC = c + colDelta * (WIN_LENGTH - 1);
 
-            if (
-                startRow >= 0 &&
-                startRow < totalRows &&
-                startCol >= 0 &&
-                startCol < totalCols &&
-                endRow >= 0 &&
-                endRow < totalRows &&
-                endCol >= 0 &&
-                endCol < totalCols
-            ) {
-                let playerCount = 0;
-                let emptyCount = 0;
-                const pieces: [number, number][] = [];
+                // If the window is within bounds
+                if (endR >= 0 && endR < totalRows && endC >= 0 && endC < totalCols) {
+                    let xCount = 0;
+                    let oCount = 0;
+                    let emptyCount = 0;
+                    const pieces: [number, number][] = [];
 
-                for (let step = 0; step < WIN_LENGTH; step++) {
-                    const r = startRow + rowDelta * step;
-                    const c = startCol + colDelta * step;
-                    const cell = board[r][c];
+                    for (let step = 0; step < WIN_LENGTH; step++) {
+                        const currR = r + rowDelta * step;
+                        const currC = c + colDelta * step;
+                        const cell = board[currR][currC];
 
-                    if (cell === player) {
-                        playerCount++;
-                        pieces.push([r, c]);
-                    } else if (cell === '') {
-                        emptyCount++;
+                        if (cell === 'X') {
+                            xCount++;
+                            pieces.push([currR, currC]);
+                        } else if (cell === 'O') {
+                            oCount++;
+                            pieces.push([currR, currC]);
+                        } else {
+                            emptyCount++;
+                        }
                     }
-                }
 
-                if (playerCount === 4 && emptyCount === 1) {
-                    for (const p of pieces) {
-                        if (!warningCells.some((wc) => wc[0] === p[0] && wc[1] === p[1])) {
-                            warningCells.push(p);
+                    // If exactly 4 of one player and 1 empty space
+                    if ((xCount === 4 || oCount === 4) && emptyCount === 1) {
+                        for (const p of pieces) {
+                            // Only add if not already in the list
+                            if (!warningCells.some((wc) => wc[0] === p[0] && wc[1] === p[1])) {
+                                warningCells.push(p);
+                            }
                         }
                     }
                 }
@@ -153,7 +146,7 @@ export function checkWarning(
         }
     }
 
-    return warningCells.length > 0 ? warningCells : null;
+    return warningCells;
 }
 
 /**
